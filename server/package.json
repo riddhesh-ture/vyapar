@@ -1,0 +1,14 @@
+{
+  "name": "@vyapar/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx partykit dev",
+    "deploy": "npx partykit deploy"
+  },
+  "dependencies": {
+    "@vyapar/game-logic": "*",
+    "partykit": "^0.0.115"
+  }
+}
