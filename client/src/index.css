@@ -12,9 +12,10 @@
   --ink: #f7f2ea;
   --ink-dim: #9c97a8;
   --saffron: #f2a93b;
+  --saffron-2: #e08a1f;
 
   --bg-deep: var(--void);
-  --bg-surface: #12121c;
+  --bg-surface: #141420;
   --bg-card: rgba(18, 18, 28, 0.85);
   --bg-glass: rgba(255, 255, 255, 0.045);
   --border-subtle: var(--glass-border);
@@ -26,6 +27,8 @@
   --accent-gold: var(--saffron);
   --danger: #e35c5c;
   --success: #5ce39a;
+  --red: #e35c5c;
+  --blue: #5c8ee3;
 
   --font-body: 'Inter', sans-serif;
   --font-serif: 'Fraunces', serif;
@@ -95,7 +98,7 @@ html, body {
 .wordmark {
   font-family: var(--font-serif);
   font-weight: 800;
-  font-size: 27px;
+  font-size: 36px;
   letter-spacing: 0.01em;
   color: var(--ink);
   text-align: center;
@@ -190,7 +193,17 @@ html, body {
 .goti-panda { background: radial-gradient(circle at 32% 28%, #b8e0ff, #5aa8d6); }
 .goti-donut { background: radial-gradient(circle at 32% 28%, #ffd18f, #e0954a); }
 
-/* ─── Board Tile Layout & Richup Circular Badges ────────────── */
+/* Prestige Vector Token Gradients */
+.goti-falcon { background: radial-gradient(circle at 32% 28%, #ffaa5e, #c75a1e); }
+.goti-crown { background: radial-gradient(circle at 32% 28%, #ffd700, #b8860b); }
+.goti-anchor { background: radial-gradient(circle at 32% 28%, #5ec7ff, #1e5ac7); }
+.goti-gem { background: radial-gradient(circle at 32% 28%, #d97eff, #8a1ec7); }
+.goti-compass { background: radial-gradient(circle at 32% 28%, #5ee0b8, #1ea378); }
+.goti-shield { background: radial-gradient(circle at 32% 28%, #ff6b6b, #c71e1e); }
+.goti-citadel { background: radial-gradient(circle at 32% 28%, #b8c4d9, #4a5b78); }
+.goti-medallion { background: radial-gradient(circle at 32% 28%, #f0c05a, #8f6713); }
+
+/* ─── Luxury Edition Board Tile Layout ─────────────────────── */
 
 .tile-wrap {
   position: relative;
@@ -200,234 +213,252 @@ html, body {
   min-height: 0;
 }
 
-.tile-prop {
+/* ------------------- BASE PREMIUM TILE ------------------- */
+.tile-node {
   position: relative;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--glass-border);
-  height: 100%;
+  background: rgba(14, 14, 24, 0.9);
+  cursor: pointer;
+  overflow: visible;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--void);
-  overflow: visible !important;
+  height: 100%;
+}
+.tile-node:hover {
+  transform: scale(1.035);
+  border-color: rgba(255, 255, 255, 0.4);
+  z-index: 25;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.65), 0 0 12px rgba(242,169,59,0.2);
+}
+.tile-node.active-land {
+  border-color: var(--saffron) !important;
+  box-shadow: 0 0 20px rgba(242, 169, 59, 0.6), inset 0 0 10px rgba(242, 169, 59, 0.3);
+  z-index: 30;
 }
 
-.wash {
-  position: absolute;
-  inset: 0;
-  border-radius: 7px;
-  opacity: 0.85;
-}
-.tile-prop::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: 7px;
-  background: linear-gradient(180deg, rgba(11,11,18,0.25), rgba(11,11,18,0.85));
-}
-
-/* Richup Circular Flag Badge sitting on the inner border edge */
-.circle-flag {
-  position: absolute;
-  z-index: 10;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.4), rgba(11,11,18,0.9) 70%);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-family: var(--font-emoji);
+/* Layered Wash & Dark Vignette Overlay */
+.wash { position: absolute; inset: 0; opacity: 0.9; z-index: 0; border-radius: 9px; overflow: hidden; }
+.tile-node::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 9px;
+  background: linear-gradient(180deg, rgba(11,11,18,0.28), rgba(11,11,18,0.72) 55%, rgba(11,11,18,0.94));
   pointer-events: none;
 }
 
-.side-bottom .circle-flag { top: -13px; left: 50%; transform: translateX(-50%); }
-.side-top .circle-flag { bottom: -13px; left: 50%; transform: translateX(-50%); }
-.side-left .circle-flag { right: -13px; top: 50%; transform: translateY(-50%); }
-.side-right .circle-flag { left: -13px; top: 50%; transform: translateY(-50%); }
-
-/* Price Tag Pill Base & Positioning */
-.price-pill {
-  position: absolute;
-  z-index: 4;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: min(10px, 0.8vw);
-  color: var(--ink);
-  background: rgba(11, 11, 18, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  padding: 1px 4px;
+/* Micro Perforation Lines */
+.perf-h {
+  position: absolute; left: 6px; right: 6px; height: 1px; z-index: 2;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1.3px);
+  background-size: 5px 1px; background-repeat: repeat-x; opacity: 0.75;
 }
-.price-pill .rs { color: var(--saffron); margin-right: 1px; }
+.perf-v {
+  position: absolute; top: 6px; bottom: 6px; width: 1px; z-index: 2;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1.3px);
+  background-size: 1px 5px; background-repeat: repeat-y; opacity: 0.75;
+}
 
-.side-bottom .price-pill { bottom: 4px; left: 50%; transform: translateX(-50%); }
-.side-top .price-pill { top: 4px; left: 50%; transform: translateX(-50%); }
-/* Outer edge = away from board center. Keeping the pill outside the side tile
-   leaves the name as the tile's only in-flow content and prevents collisions. */
-.side-left .price-pill  { left: -4px; top: 50%; transform: translate(-100%, -50%); }
-.side-right .price-pill { right: -4px; top: 50%; transform: translate(100%, -50%); }
+/* Luxury Sphere Flag Badge */
+.flag-bubble {
+  position: absolute;
+  width: clamp(21px, 2.5vw, 26px);
+  height: clamp(21px, 2.5vw, 26px);
+  border-radius: 50%;
+  z-index: 6;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.45), rgba(11,11,18,0.82) 72%);
+  border: 1.5px solid rgba(255,255,255,0.45);
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(10px, 1.2vw, 13px);
+  font-family: var(--font-emoji);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.65), inset 0 1px 2px rgba(255,255,255,0.4);
+  pointer-events: none;
+}
 
-/* Property Name Text */
-.tile-name-text {
-  position: relative;
-  z-index: 3;
+/* High-Contrast Typography & Price Badges */
+.tile-name {
   font-family: var(--font-serif);
   font-weight: 800;
-  font-size: min(10.5px, 0.8vw);
+  font-size: clamp(7.5px, 0.78vw, 9.5px);
   color: var(--ink);
   line-height: 1.1;
-  text-align: center;
-  white-space: nowrap;
-}
-
-/* The name is the only in-flow element on property tiles. Side labels keep the
-   same centered layout as top/bottom labels, without reserving flex width. */
-.side-left .tile-name-text,
-.side-right .tile-name-text {
-  width: 100%;
-  padding: 0 4px;
-  font-size: min(10px, 0.8vw);
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  max-width: 100%;
+  padding: 0 2px;
 }
-.side-bottom .tile-name-text { padding: 18px 4px 16px; }
-.side-top .tile-name-text { padding: 16px 4px 18px; }
+.tile-kind {
+  font-size: clamp(6px, 0.65vw, 7.5px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(247,242,234,0.6);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 2px;
+}
+.tile-price {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(6.5px, 0.7vw, 8.5px);
+  color: var(--ink);
+  background: rgba(11,11,18,0.75);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 4px;
+  padding: 1px 4px;
+  white-space: nowrap;
+  width: fit-content;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+.tile-price .rs { color: var(--saffron); font-weight: 700; margin-right: 1px; }
 
-/* Goti Token Slot Positioned Absolutely */
-.goti-slot {
+/* Owner Strip - Diagonal Striped Pattern */
+.owner-strip {
   position: absolute;
-  z-index: 5;
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+.owner-unclaimed {
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 4px, rgba(255,255,255,0.02) 4px 8px);
+}
+.owner-p1, .owner-red { background: linear-gradient(90deg, #ff9d6c, #e35c3c) !important; box-shadow: 0 0 10px rgba(227,92,60,0.7); }
+.owner-p2, .owner-blue { background: linear-gradient(90deg, #8fc7ff, #4a78d6) !important; box-shadow: 0 0 10px rgba(74,120,214,0.7); }
+.owner-p3, .owner-green { background: linear-gradient(90deg, #b9ec8a, #5ce39a) !important; box-shadow: 0 0 10px rgba(92,227,154,0.7); }
+.owner-p4, .owner-yellow { background: linear-gradient(90deg, #ffd18f, #f2a93b) !important; box-shadow: 0 0 10px rgba(242,169,59,0.7); }
+.owner-p5, .owner-purple { background: linear-gradient(90deg, #c084fc, #8b5cf6) !important; box-shadow: 0 0 10px rgba(139,92,246,0.7); }
+
+/* Goti Token Landing Slots */
+.goti-slot-box {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 5;
   gap: 2px;
   flex-wrap: wrap;
 }
-.goti-slot.empty {
+.goti-slot-box.empty {
   display: none;
 }
 
-.side-bottom .goti-slot { bottom: 16px; left: 50%; transform: translateX(-50%); }
-.side-top .goti-slot { top: 16px; left: 50%; transform: translateX(-50%); }
+/* ------------------- 4 ORIENTATION LAYOUTS ------------------- */
 
-/* Pin side tokens beneath the label rather than in the side tile's text area. */
-.side-left .goti-slot,
-.side-right .goti-slot {
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
+/* 1. TOP TILES (Facing Downward) */
+.tile-top {
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px 2px 14px;
 }
+.tile-top .owner-strip { top: 0; left: 0; right: 0; height: 4px; border-radius: 9px 9px 0 0; }
+.tile-top .perf-h { top: 7px; }
+.tile-top .flag-bubble { bottom: -12px; left: 50%; transform: translateX(-50%); }
+.tile-top .tile-body { z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 1.5px; margin-top: 4px; width: 100%; box-sizing: border-box; }
+.tile-top .goti-slot-box { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); }
 
-.owner {
-  position: absolute;
+/* 2. BOTTOM TILES (Facing Upward) */
+.tile-bottom {
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 2px 5px;
+}
+.tile-bottom .owner-strip { bottom: 0; left: 0; right: 0; height: 4px; border-radius: 0 0 9px 9px; }
+.tile-bottom .perf-h { bottom: 7px; }
+.tile-bottom .flag-bubble { top: -12px; left: 50%; transform: translateX(-50%); }
+.tile-bottom .tile-body { z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 1.5px; margin-bottom: 4px; width: 100%; box-sizing: border-box; }
+.tile-bottom .goti-slot-box { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); }
+
+/* 3. LEFT TILES (Rotated 90deg, Flag facing Right) */
+.tile-left { position: relative; padding: 0; }
+.tile-left .owner-strip { left: 0; top: 0; bottom: 0; width: 4px; border-radius: 9px 0 0 9px; }
+.tile-left .perf-v { left: 7px; }
+.tile-left .flag-bubble { right: -12px; top: 50%; transform: translateY(-50%); }
+.tile-left .tile-body-rotated {
   z-index: 2;
-  font-size: 8px;
-  font-weight: 700;
-  color: white;
-  border-radius: 3px;
-  padding: 1px 3px;
-}
-.side-bottom .owner { bottom: 2px; left: 2px; }
-.side-top .owner { top: 2px; right: 2px; }
-.side-left .owner { bottom: 2px; left: 2px; }
-.side-right .owner { bottom: 2px; right: 2px; }
-
-.owner-red { background: rgba(214, 79, 79, 0.8); }
-.owner-blue { background: rgba(74, 120, 214, 0.8); }
-.owner-green { background: rgba(74, 180, 120, 0.8); }
-.owner-yellow { background: rgba(245, 158, 11, 0.8); }
-.owner-purple { background: rgba(139, 92, 246, 0.8); }
-
-/* Country Gradients */
-.brazil { background: linear-gradient(150deg, #1c8a4a, #0d5a30); }
-.israel { background: linear-gradient(150deg, #2760b0, #173e78); }
-.italy { background: linear-gradient(150deg, #1e8a4c, #1a6b3c 45%, #b03636); }
-.germany { background: linear-gradient(150deg, #2a2a2e, #b03636 120%); }
-.france { background: linear-gradient(150deg, #2d4fa3, #b03636 120%); }
-.china { background: linear-gradient(150deg, #b8272a, #8a1c1e); }
-.uk { background: linear-gradient(150deg, #1f2b5c, #b03636 120%); }
-.usa { background: linear-gradient(150deg, #2d4fa3, #173e78); }
-.japan { background: linear-gradient(150deg, #a82835, #6e151d); }
-
-/* ─── Square Special Tile ────────────────────────────────────── */
-
-.sq {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  border: 1px solid var(--glass-border);
-  overflow: hidden;
+  transform: rotate(90deg);
+  transform-origin: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1.5px;
+  width: 72px;
 }
-.sq::after {
-  content: "";
+.tile-left .goti-slot-box {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(11, 11, 18, 0.2), rgba(11, 11, 18, 0.75));
+  left: 8px; top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.sq-content {
-  position: relative;
+/* 4. RIGHT TILES (Rotated -90deg, Flag facing Left) */
+.tile-right { position: relative; padding: 0; }
+.tile-right .owner-strip { right: 0; top: 0; bottom: 0; width: 4px; border-radius: 0 9px 9px 0; }
+.tile-right .perf-v { right: 7px; }
+.tile-right .flag-bubble { left: -12px; top: 50%; transform: translateY(-50%); }
+.tile-right .tile-body-rotated {
   z-index: 2;
+  transform: rotate(-90deg);
+  transform-origin: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 1.5px;
+  width: 72px;
+}
+.tile-right .goti-slot-box {
+  position: absolute;
+  right: 8px; top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 5. CORNER TILES */
+.tile-corner { overflow: hidden; position: relative; }
+.corner-inner {
+  position: relative;
+  z-index: 3;
+  height: 100%; width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 2px;
   padding: 4px;
   text-align: center;
 }
-.side-left .sq-content {
-  flex-direction: row-reverse;
-  align-items: center;
-  justify-content: space-around;
-  width: 100%;
-  padding: 0 6px;
-  gap: 4px;
-}
-.side-right .sq-content {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  width: 100%;
-  padding: 0 6px;
-  gap: 4px;
-}
-.sq-icon { font-size: min(22px, 1.8vw); }
-.sq-name {
-  font-family: var(--font-serif);
-  font-weight: 800;
-  font-size: min(11.5px, 0.85vw);
-  color: var(--ink);
-  text-align: center;
-  line-height: 1.1;
-}
-.sq-kind {
-  font-size: 8px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(247, 242, 234, 0.6);
-}
+.corner-icon { font-size: clamp(16px, 2.2vw, 24px); filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)); }
+.corner-title { font-family: var(--font-serif); font-size: clamp(9px, 1.1vw, 12px); font-weight: 800; }
+.corner-desc { font-size: 7.5px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.tile-corner .goti-slot-box { position: absolute; bottom: 6px; z-index: 5; display: flex; gap: 2px; }
 
-.jail { position: absolute; inset: 0; background: linear-gradient(150deg, #3a3a44, #1f1f26); }
-.vacation { position: absolute; inset: 0; background: linear-gradient(150deg, #e0995c, #c96a3f); }
-.company { position: absolute; inset: 0; background: linear-gradient(150deg, #d4af5a, #a67e2f); }
-.shop { position: absolute; inset: 0; background: linear-gradient(150deg, #7a4fb0, #4f2f80); }
-.agri { position: absolute; inset: 0; background: linear-gradient(150deg, #5c8a3f, #3a5c28); }
-.go { position: absolute; inset: 0; background: linear-gradient(150deg, #2b7a4b, #184a2c); }
-.airport { position: absolute; inset: 0; background: linear-gradient(150deg, #2b5b7a, #17364a); }
-.tax { position: absolute; inset: 0; background: linear-gradient(150deg, #8a4a2b, #522a16); }
-.card { position: absolute; inset: 0; background: linear-gradient(150deg, #5b3b7a, #351f4a); }
+/* Rich Color Gradients */
+.brazil { background: linear-gradient(150deg, #1c8a4a, #0d5a30); }
+.israel { background: linear-gradient(150deg, #2760b0, #173e78); }
+.italy  { background: linear-gradient(150deg, #1e8a4c, #1a6b3c 45%, #b03636); }
+.germany{ background: linear-gradient(150deg, #2a2a2e, #b03636 120%); }
+.france { background: linear-gradient(150deg, #2d4fa3, #b03636 120%); }
+.china  { background: linear-gradient(150deg, #b8272a, #8a1c1e); }
+.uk     { background: linear-gradient(150deg, #1f2b5c, #b03636 120%); }
+.usa    { background: linear-gradient(150deg, #2d4fa3, #173e78); }
+.japan  { background: linear-gradient(150deg, #a82835, #6e151d); }
+.india  { background: linear-gradient(150deg, #d46726, #1b7a3e); }
+.special-util { background: linear-gradient(150deg, #d4af5a, #826222); }
+.special-chest{ background: linear-gradient(150deg, #6b4ba1, #3a255e); }
+.corner-jail  { background: linear-gradient(150deg, #3a3a44, #1f1f26); }
+.corner-vac   { background: linear-gradient(150deg, #e0995c, #c96a3f); }
+.corner-start { background: linear-gradient(150deg, #1c8a5e, #0c4d32); }
+.corner-police{ background: linear-gradient(150deg, #8a2020, #4a0c0c); }
 
 /* ─── Dice Component ────────────────────────────────────────── */
 
@@ -520,44 +551,86 @@ html, body {
 .hud-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.045);
+  gap: 12px;
+  background: var(--bg-surface);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  padding: 8px 14px 8px 8px;
+  padding: 14px;
   min-width: 140px;
-  transition: border-color .2s, background .2s;
+  transition: border-color .2s, background .2s, box-shadow .2s;
 }
 .hud-chip.active-turn {
   border-color: var(--saffron);
-  background: rgba(242, 169, 59, 0.08);
-  box-shadow: 0 0 16px rgba(242, 169, 59, 0.15);
+  background: rgba(242, 169, 59, 0.06);
+  box-shadow: 0 0 18px rgba(242, 169, 59, 0.12);
 }
 
 .hud-info {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 .hud-name {
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--ink);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+}
+.you-tag {
+  font-size: 10px;
+  color: var(--ink-dim);
+  font-weight: 500;
+  font-family: var(--font-body);
 }
 .hud-cash {
   font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--ink-dim);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
 }
 .hud-cash .rs { color: var(--saffron); margin-right: 1px; }
 .crown { font-size: 11px; }
 
+/* Player meta line — position + properties */
+.player-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
+.player-meta svg { width: 11px; height: 11px; flex-shrink: 0; }
+.meta-divider { color: rgba(156, 151, 168, 0.4); }
+
 /* ─── Property Detail Modal ─────────────────────────────────── */
+
+/* ─── Modal Backdrop ────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 15, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-backdrop.show {
+  display: flex;
+  animation: fadeInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
 
 .modal-wrap {
   position: relative;
@@ -567,28 +640,30 @@ html, body {
 
 .modal-flag {
   position: absolute;
-  top: -30px;
+  top: -28px;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   z-index: 5;
-  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.35), rgba(11, 11, 18, 0.7) 70%);
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.45), rgba(11, 11, 18, 0.85) 70%);
+  border: 2px solid rgba(255, 255, 255, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-emoji);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.75);
 }
 
 .modal-card {
   position: relative;
   overflow: hidden;
   border-radius: 24px;
-  border: 1px solid var(--glass-border);
-  background: var(--void);
+  border: 1.5px solid var(--glass-border);
+  background: #12121e;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.8);
 }
 .modal-card::after {
   content: "";
@@ -647,42 +722,43 @@ html, body {
 }
 .rent-row .val .rs { color: var(--saffron); margin-right: 1px; }
 
-.stat-row {
+.stat-row, .stat-grid {
   display: flex;
   gap: 8px;
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.stat {
+.stat, .stat-box {
   flex: 1;
   text-align: center;
 }
 .stat-icon { font-size: 16px; margin-bottom: 4px; }
-.stat-label {
-  font-size: 9px;
+.stat-label, .stat-lbl {
+  font-size: 8.5px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--ink-dim);
   margin-bottom: 3px;
 }
-.stat-val {
+.stat-val, .stat-v {
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 12.5px;
   color: var(--ink);
 }
 
-.modal-btns {
+.modal-btns, .modal-btn-row {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
-.modal-btns .btn, .modal-btns .btn-ghost {
+.modal-btns .btn, .modal-btns .btn-ghost,
+.modal-btn-row .btn, .modal-btn-row .btn-ghost {
   flex: 1;
   text-align: center;
-  padding: 12px 10px;
-  font-size: 12.5px;
+  padding: 11px 10px;
+  font-size: 12px;
 }
 
 /* ─── Token Picker Modal ────────────────────────────────────── */
@@ -860,7 +936,7 @@ html, body {
 
 .game-view {
   display: grid;
-  grid-template-columns: 200px 1fr 240px;
+  grid-template-columns: 260px 1fr 280px;
   height: 100vh;
   gap: 0;
   overflow: hidden;
@@ -887,22 +963,27 @@ html, body {
 }
 
 .board {
-  width: min(94vh, calc(100vw - 460px));
-  height: min(94vh, calc(100vw - 460px));
+  width: min(96vh, calc(100vw - 460px), 940px);
+  height: min(96vh, calc(100vw - 460px), 940px);
   aspect-ratio: 1;
 }
 
 .board-grid {
   display: grid;
-  grid-template-columns: 2fr repeat(9, 1fr) 2fr;
-  grid-template-rows: 2fr repeat(9, 1fr) 2fr;
+  grid-template-columns: 1.45fr repeat(9, 1fr) 1.45fr;
+  grid-template-rows: 1.45fr repeat(9, 1fr) 1.45fr;
   width: 100%;
   height: 100%;
-  gap: 2px;
+  gap: 3px;
   background: rgba(255, 255, 255, 0.04);
   border: 2px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: visible !important;
+  box-shadow:
+    0 30px 80px -15px rgba(0, 0, 0, 0.9),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 0 40px rgba(0, 0, 0, 0.5);
+  padding: 4px;
 }
 
 .board-center {
@@ -923,18 +1004,18 @@ html, body {
 }
 
 .panel-title {
-  font-family: var(--font-serif);
-  font-size: 12px;
-  color: var(--ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding: 16px 16px 8px;
+  color: var(--ink-dim);
+  padding: 16px 16px 12px;
+  margin: 0;
 }
 
 .player-panel-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding: 0 12px 12px;
 }
 
@@ -945,23 +1026,213 @@ html, body {
   gap: 14px;
 }
 
-.game-log {
+/* ─── Turn Card (v5 Reference) ──────────────────────────────── */
+
+.turn-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(242, 169, 59, 0.08);
+  border: 1px solid rgba(242, 169, 59, 0.4);
+}
+.turn-card-info {
+  font-family: var(--font-serif);
+}
+.turn-card-title {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink);
+}
+.turn-card-phase {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--saffron);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+/* ─── Stat Pair Boxes (v5 Reference) ────────────────────────── */
+
+.stat-pair {
+  display: flex;
+  gap: 10px;
+}
+.stat-box-card {
   flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.stat-box-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 5px;
+}
+.stat-box-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+}
+.stat-box-val.name {
+  font-family: var(--font-serif);
+  font-size: 14px;
+}
+
+/* ─── Action Block Labels (v5 Reference) ────────────────────── */
+
+.action-block {
+  margin-bottom: 4px;
+}
+.action-block-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+.action-btns-row {
+  display: flex;
+  gap: 8px;
+}
+.action-btns-row .btn, .action-btns-row .btn-ghost {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 13px;
+  text-align: center;
+}
+.action-full {
+  width: 100%;
+}
+
+/* ─── Game Log (v5 Reference — Center Board) ────────────────── */
+
+.game-log {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-top: 1px solid var(--glass-border);
+  background: rgba(20, 20, 32, 0.92);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.game-log .log-header {
+  padding: 10px 16px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border-bottom: 1px solid var(--glass-border);
+  font-weight: 600;
 }
 .game-log-entries {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 12px;
+  padding: 6px 16px;
+  max-height: 170px;
 }
 .log-entry {
-  padding: 4px 0;
-  font-size: 11.5px;
+  padding: 6px 0;
+  font-size: 12.5px;
   color: var(--ink-dim);
-  border-bottom: 1px solid rgba(255,255,255,0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  line-height: 1.4;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-red { color: var(--red); font-weight: 600; }
+.log-blue { color: var(--blue); font-weight: 600; }
+.log-green { color: var(--success); font-weight: 600; }
+.log-amount { color: var(--saffron); font-family: var(--font-mono); font-weight: 600; }
+
+/* ─── Inline Rent Board (Left Sidebar) ──────────────────────── */
+
+.rent-board {
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 0 12px 12px;
+  animation: fadeInRent 0.3s ease;
+}
+@keyframes fadeInRent {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rent-board-header {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rent-board-header .wash {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  z-index: 0;
+}
+.rent-board-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(11, 11, 18, 0.3), rgba(11, 11, 18, 0.9));
+}
+.rent-board-header > * {
+  position: relative;
+  z-index: 2;
+}
+.rent-board-name {
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--ink);
+  text-align: center;
+}
+.rent-board-sub {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(247, 242, 234, 0.6);
+  text-align: center;
+}
+.rent-board-body {
+  padding: 0 14px 14px;
+}
+.rent-board .rent-head {
+  font-size: 9px;
+  padding-bottom: 6px;
+  margin-bottom: 0;
+}
+.rent-board .rent-row {
+  padding: 6px 0;
+  font-size: 12px;
+}
+.rent-board .rent-row .val {
+  font-size: 14px;
+}
+.rent-board .stat-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  gap: 6px;
+}
+.rent-board .stat-label, .rent-board .stat-lbl {
+  font-size: 8px;
+}
+.rent-board .stat-val, .rent-board .stat-v {
+  font-size: 11px;
+}
+.rent-row.highlight {
+  color: var(--saffron);
+  font-weight: 600;
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────────── */
@@ -987,4 +1258,12 @@ html, body {
   .player-panel-list {
     flex-direction: row;
   }
+}
+
+/* ─── Center Board Log Container ────────────────────────────── */
+
+.center-log-wrap {
+  width: 100%;
+  max-width: 340px;
+  margin-top: 4px;
 }

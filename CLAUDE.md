@@ -76,19 +76,19 @@ vyapar/
 - **Currency:** All monetary values use `$ USD` (starting cash $15,000).
 - **Language:** Clean English-only interface ("VYAPAR" header branding).
 
-### 3. Board UI Layout (RichUp.io Inspired)
+### 3. Board UI Layout (Luxury Edition)
 - **11x11 Grid Layout:** Corner tiles set to `2fr` / `2.2fr` size for higher prominence.
-- **Absolute Side Positioning System:**
-  - `circle-flag`: Pinned absolutely to the inner edge facing the board center (`top: -13px` for bottom, `bottom: -13px` for top, `right: -13px` for left, `left: -13px` for right).
-  - `price-pill`: Pinned absolutely to the outer edge of each tile (`bottom: 4px` for bottom, `top: 4px` for top, `left: 4px` for left, `right: 4px` for right).
-  - `goti-slot`: Positioned absolutely (`bottom: 3px` / `top: 16px`) so player tokens sit cleanly without fighting in-flow elements; empty state hidden (`display: none`).
-  - `tile-name-text`: The sole in-flow element, centered with side padding (`white-space: nowrap`) ensuring city names remain single-line horizontal text with zero wrapping or off-center dragging.
-- **Visual Features:**
-  - `12px` thick color bars facing the center of the board.
-  - Country flag emojis displayed on each city tile.
-  - `20px` player avatar tokens with distinct color borders.
-  - `10px` owner dots and mortgage `M` indicators on tiles.
-  - `3.5rem` large dice display in board center.
+- **4-Orientation Rotated Tile System:**
+  - `tile-left`: Rotated 90° (`transform: rotate(90deg)`) facing inward toward the center; owner strip on outer left edge, flag bubble on inner right edge (`right: -12px`).
+  - `tile-right`: Rotated -90° (`transform: rotate(-90deg)`) facing inward toward the center; owner strip on outer right edge, flag bubble on inner left edge (`left: -12px`).
+  - `tile-top`: Standard vertical column facing down; owner strip on outer top edge, flag bubble on inner bottom edge (`bottom: -12px`).
+  - `tile-bottom`: Standard vertical column facing up; owner strip on outer bottom edge, flag bubble on inner top edge (`top: -12px`).
+- **Luxury Aesthetic Elements:**
+  - **Flag Bubbles (`.flag-bubble`):** Spherical 3D flag badges positioned on inner edges with radial shading and border glow.
+  - **Owner Strips (`.owner-strip`):** Border indicator stripes (`.owner-unclaimed`, `.owner-p1`, `.owner-p2`, etc.) with diagonal stripe patterns and glowing player colors.
+  - **Micro-Perforations (`.perf-h` / `.perf-v`):** Subtly dotted perforation lines across tickets for a luxury printed feel.
+  - **Clean Typography & Badges:** `Fraunces` serif property titles, uppercase category subtitles, and high-contrast `.tile-price` pills with saffron currency accents.
+  - **Goti Token Slots (`.goti-slot-box`):** Clean player piece positioning away from flag bubbles with hidden empty states.
 
 ---
 

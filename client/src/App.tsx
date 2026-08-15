@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useVyapar } from './hooks/useVyapar';
-import { LobbyHome } from './components/Lobby';
-import { WaitingRoom } from './components/WaitingRoom';
+import { LobbyHome } from './components/lobby/Lobby';
+import { WaitingRoom } from './components/lobby/WaitingRoom';
 import { GameView } from './components/GameView';
 
 type AppScreen = 'home' | 'connecting' | 'connected';
@@ -19,19 +19,27 @@ function App() {
   } = useVyapar();
 
   const [pendingName, setPendingName] = useState<string>('');
+  const [pendingGoti, setPendingGoti] = useState<string>('');
 
-  const handleJoin = (roomCode: string, playerName: string) => {
+  const handleJoin = (roomCode: string, playerName: string, gotiId?: string) => {
     setPendingName(playerName);
+    if (gotiId) setPendingGoti(gotiId);
     connect(roomCode);
   };
 
-  // Once connected, set the player name via useEffect
+  // Once connected, set the player name & goti via useEffect
   useEffect(() => {
-    if (connected && playerId && pendingName) {
-      sendIntent({ type: 'setName', name: pendingName });
-      setPendingName('');
+    if (connected && playerId) {
+      if (pendingName) {
+        sendIntent({ type: 'setName', name: pendingName });
+        setPendingName('');
+      }
+      if (pendingGoti) {
+        sendIntent({ type: 'setGoti', gotiId: pendingGoti });
+        setPendingGoti('');
+      }
     }
-  }, [connected, playerId, pendingName, sendIntent]);
+  }, [connected, playerId, pendingName, pendingGoti, sendIntent]);
 
   // Determine which screen to show
   let screen: AppScreen = 'home';

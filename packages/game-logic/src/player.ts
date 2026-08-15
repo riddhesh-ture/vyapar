@@ -123,10 +123,12 @@ export function createPlayer(
   id: string,
   name: string,
   startingCash: number,
+  gotiId?: string,
 ): Player {
   return {
     id,
     name,
+    gotiId,
     cash: startingCash,
     position: 0,
     inJail: false,

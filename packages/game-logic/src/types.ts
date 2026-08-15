@@ -50,6 +50,7 @@ export interface PropertyState {
 export interface Player {
   id: string;
   name: string;
+  gotiId?: string;
   cash: number;
   /** Tile index 0-39 */
   position: number;
@@ -225,8 +226,10 @@ export interface GameState {
 
 export type PlayerIntent =
   | { type: 'setName'; name: string }
+  | { type: 'setGoti'; gotiId: string }
   | { type: 'updateConfig'; config: Partial<GameConfig> }
   | { type: 'startGame' }
+  | { type: 'resetGame' }
   | { type: 'rollDice' }
   | { type: 'buyProperty' }
   | { type: 'declineBuy' }

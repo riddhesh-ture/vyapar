@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import type { GameState, PlayerIntent } from '@vyapar/game-logic';
-import { Board } from './Board';
-import { ActionPanel } from './ActionPanel';
-import { PlayerPanel } from './PlayerPanel';
-import { GameLog } from './GameLog';
+import { Board } from './board/Board';
+import { ActionPanel } from './actions/ActionPanel';
+import { PlayerPanel } from './hud/PlayerPanel';
+import { RentBoard } from './hud/RentBoard';
+import { PropertyModal } from './modals/PropertyModal';
 
 interface GameViewProps {
   gameState: GameState;
@@ -11,28 +13,53 @@ interface GameViewProps {
 }
 
 export function GameView({ gameState, playerId, sendIntent }: GameViewProps) {
+  const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(null);
+
   return (
     <div className="game-view">
-      {/* Left sidebar: player panel */}
+      {/* Left sidebar: player panel + inline rent board */}
       <aside className="game-sidebar game-sidebar-left">
-        <PlayerPanel gameState={gameState} playerId={playerId} />
+        <PlayerPanel
+          gameState={gameState}
+          playerId={playerId}
+          onSelectTile={(idx) => setSelectedTileIndex(idx)}
+        />
+        <RentBoard
+          gameState={gameState}
+          playerId={playerId}
+          onSelectTile={(idx) => setSelectedTileIndex(idx)}
+        />
       </aside>
 
-      {/* Center: board */}
+      {/* Center: board (game log now embedded inside CenterConsole) */}
       <main className="game-main">
-        <Board gameState={gameState} playerId={playerId} sendIntent={sendIntent} />
+        <Board
+          gameState={gameState}
+          playerId={playerId}
+          sendIntent={sendIntent}
+          onSelectTile={(idx) => setSelectedTileIndex(idx)}
+        />
       </main>
 
-
-      {/* Right sidebar: actions + log */}
+      {/* Right sidebar: actions only (log moved to center) */}
       <aside className="game-sidebar game-sidebar-right">
         <ActionPanel
           gameState={gameState}
           playerId={playerId}
           sendIntent={sendIntent}
         />
-        <GameLog gameState={gameState} />
       </aside>
+
+      {/* Property Deed Inspection Modal */}
+      {selectedTileIndex !== null && (
+        <PropertyModal
+          tileIndex={selectedTileIndex}
+          gameState={gameState}
+          playerId={playerId}
+          onClose={() => setSelectedTileIndex(null)}
+          sendIntent={sendIntent}
+        />
+      )}
     </div>
   );
 }

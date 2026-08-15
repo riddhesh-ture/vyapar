@@ -35,6 +35,14 @@ import {
   getWinner,
   transferMoney,
   canAfford,
+  canMortgage,
+  getMortgageValue,
+  canUnmortgage,
+  getUnmortgageCost,
+  canBuildHouse,
+  getBuildCost,
+  canSellHouse,
+  getHouseSellPrice,
 } from '@vyapar/game-logic';
 
 // ─── Server ──────────────────────────────────────────────────
@@ -143,11 +151,17 @@ export default class VyaparServer implements Party.Server {
       case 'setName':
         this.handleSetName(playerId, intent.name);
         break;
+      case 'setGoti':
+        this.handleSetGoti(playerId, intent.gotiId);
+        break;
       case 'updateConfig':
         this.handleUpdateConfig(playerId, intent.config);
         break;
       case 'startGame':
         this.handleStartGame(playerId);
+        break;
+      case 'resetGame':
+        this.handleResetGame(playerId);
         break;
       case 'rollDice':
         this.handleRollDice(playerId);
@@ -163,6 +177,18 @@ export default class VyaparServer implements Party.Server {
         break;
       case 'passAuction':
         this.handlePassAuction(playerId);
+        break;
+      case 'buildHouse':
+        this.handleBuildHouse(playerId, intent.tileIndex);
+        break;
+      case 'sellHouse':
+        this.handleSellHouse(playerId, intent.tileIndex);
+        break;
+      case 'mortgage':
+        this.handleMortgage(playerId, intent.tileIndex);
+        break;
+      case 'unmortgage':
+        this.handleUnmortgage(playerId, intent.tileIndex);
         break;
       case 'payJailFine':
         this.handlePayJailFine(playerId);
@@ -197,6 +223,94 @@ export default class VyaparServer implements Party.Server {
     if (!trimmed) throw new Error('Name cannot be empty.');
     player.name = trimmed;
     this.addLog(`${player.name} updated their name.`);
+  }
+
+  handleSetGoti(playerId: string, gotiId: string): void {
+    const player = this.getPlayer(playerId);
+    player.gotiId = gotiId;
+  }
+
+  handleResetGame(playerId: string): void {
+    const roomPlayers = this.state.players.map(p => ({
+      ...p,
+      cash: this.state.config.startingCash,
+      position: 0,
+      inJail: false,
+      jailTurns: 0,
+      getOutOfJailFreeCards: 0,
+      bankrupt: false,
+      skipNextTurn: false,
+      rentFreePass: false,
+      rentCollectionMultiplier: 1,
+    }));
+    this.state = this.createWaitingState(this.room.id);
+    this.state.players = roomPlayers;
+    this.addLog('Game reset to lobby.');
+  }
+
+  handleMortgage(playerId: string, tileIndex: number): void {
+    if (this.state.phase === 'waiting' || this.state.phase === 'gameOver') {
+      throw new Error('Cannot mortgage right now.');
+    }
+    const player = this.getPlayer(playerId);
+    if (!canMortgage(playerId, tileIndex, this.state)) {
+      throw new Error('Cannot mortgage this property.');
+    }
+    const tile = BOARD[tileIndex];
+    const prop = this.state.properties[tileIndex];
+    const val = getMortgageValue(tileIndex);
+    prop.mortgaged = true;
+    player.cash += val;
+    this.addLog(`${player.name} mortgaged ${tile.name} for ₹${val}.`);
+  }
+
+  handleUnmortgage(playerId: string, tileIndex: number): void {
+    if (this.state.phase === 'waiting' || this.state.phase === 'gameOver') {
+      throw new Error('Cannot unmortgage right now.');
+    }
+    const player = this.getPlayer(playerId);
+    if (!canUnmortgage(playerId, tileIndex, this.state)) {
+      throw new Error('Cannot unmortgage this property.');
+    }
+    const tile = BOARD[tileIndex];
+    const prop = this.state.properties[tileIndex];
+    const cost = getUnmortgageCost(tileIndex);
+    player.cash -= cost;
+    prop.mortgaged = false;
+    this.addLog(`${player.name} lifted mortgage on ${tile.name} for ₹${cost}.`);
+  }
+
+  handleBuildHouse(playerId: string, tileIndex: number): void {
+    if (this.state.phase === 'waiting' || this.state.phase === 'gameOver') {
+      throw new Error('Cannot build right now.');
+    }
+    const player = this.getPlayer(playerId);
+    if (!canBuildHouse(playerId, tileIndex, this.state)) {
+      throw new Error('Cannot build on this property.');
+    }
+    const tile = BOARD[tileIndex];
+    const prop = this.state.properties[tileIndex];
+    const cost = getBuildCost(tileIndex, prop.houses);
+    player.cash -= cost;
+    prop.houses += 1;
+    const upgradeType = prop.houses === 5 ? 'a Hotel 🏨' : `House #${prop.houses} 🏠`;
+    this.addLog(`${player.name} built ${upgradeType} on ${tile.name} for ₹${cost}.`);
+  }
+
+  handleSellHouse(playerId: string, tileIndex: number): void {
+    if (this.state.phase === 'waiting' || this.state.phase === 'gameOver') {
+      throw new Error('Cannot sell houses right now.');
+    }
+    const player = this.getPlayer(playerId);
+    if (!canSellHouse(playerId, tileIndex, this.state)) {
+      throw new Error('Cannot sell house from this property.');
+    }
+    const tile = BOARD[tileIndex];
+    const prop = this.state.properties[tileIndex];
+    const refund = getHouseSellPrice(tileIndex, prop.houses);
+    prop.houses -= 1;
+    player.cash += refund;
+    this.addLog(`${player.name} sold a house from ${tile.name} for ₹${refund}.`);
   }
 
   handleUpdateConfig(playerId: string, config: Partial<GameConfig>): void {
