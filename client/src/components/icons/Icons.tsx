@@ -338,43 +338,116 @@ export function PinIcon({ size = 14, color = 'currentColor', className, style }:
   );
 }
 
-// ─── Country Vector Badges ───────────────────────────────────────────
+// ─── Real SVG Country Flags (No Text Codes, No Emojis) ─────────────
 
 export function CountryCrestBadge({ group, size = 24 }: { group: string; size?: number }) {
-  const crests: Record<string, { code: string; bg: string; text: string; border: string }> = {
-    A: { code: 'BR', bg: 'linear-gradient(135deg, #107c41, #005a2b)', text: '#fed700', border: 'rgba(254, 215, 0, 0.5)' },
-    B: { code: 'FR', bg: 'linear-gradient(135deg, #002395, #ed2939)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.5)' },
-    C: { code: 'CN', bg: 'linear-gradient(135deg, #de2910, #aa1e0b)', text: '#ffde00', border: 'rgba(255, 222, 0, 0.5)' },
-    D: { code: 'JP', bg: 'linear-gradient(135deg, #bc002d, #8b0021)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.5)' },
-    E: { code: 'IT', bg: 'linear-gradient(135deg, #009246, #ce2b37)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.5)' },
-    F: { code: 'DE', bg: 'linear-gradient(135deg, #222222, #dd0000)', text: '#ffce00', border: 'rgba(255, 206, 0, 0.5)' },
-    G: { code: 'UK', bg: 'linear-gradient(135deg, #012169, #c8102e)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.5)' },
-    H: { code: 'US', bg: 'linear-gradient(135deg, #002868, #bf0a30)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.5)' },
+  const flags: Record<string, React.ReactNode> = {
+    A: (
+      // Brazil
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="90" height="60" fill="#1c8a4a" />
+        <polygon points="45,8 82,30 45,52 8,30" fill="#f5c518" />
+        <circle cx="45" cy="30" r="12" fill="#173e78" />
+      </svg>
+    ),
+    B: (
+      // France
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="30" height="60" fill="#2d4fa3" />
+        <rect x="30" width="30" height="60" fill="#f5f1e8" />
+        <rect x="60" width="30" height="60" fill="#c93b3b" />
+      </svg>
+    ),
+    C: (
+      // China
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="90" height="60" fill="#b8272a" />
+        <polygon points="20,7 22.6,14.8 30.8,14.8 24.2,19.6 26.8,27.4 20,22.6 13.2,27.4 15.8,19.6 9.2,14.8 17.4,14.8" fill="#f5c518" />
+        <circle cx="34" cy="10" r="1.6" fill="#f5c518" />
+        <circle cx="37" cy="16" r="1.6" fill="#f5c518" />
+        <circle cx="36" cy="23" r="1.6" fill="#f5c518" />
+        <circle cx="32" cy="27" r="1.6" fill="#f5c518" />
+      </svg>
+    ),
+    D: (
+      // Japan
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="90" height="60" fill="#f5f1e8" />
+        <circle cx="45" cy="30" r="16" fill="#c9282a" />
+      </svg>
+    ),
+    E: (
+      // Italy
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="30" height="60" fill="#1e8a4c" />
+        <rect x="30" width="30" height="60" fill="#f5f1e8" />
+        <rect x="60" width="30" height="60" fill="#c93b3b" />
+      </svg>
+    ),
+    F: (
+      // Germany
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="90" height="20" fill="#1a1a1a" />
+        <rect y="20" width="90" height="20" fill="#c93b3b" />
+        <rect y="40" width="90" height="20" fill="#d4af37" />
+      </svg>
+    ),
+    G: (
+      // United Kingdom
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="90" height="60" fill="#1f2b5c" />
+        <polygon points="0,0 12,0 90,54 90,60 78,60 0,6" fill="#f5f1e8" />
+        <polygon points="90,0 78,0 0,54 0,60 12,60 90,6" fill="#f5f1e8" />
+        <polygon points="0,0 6,0 90,57 90,60 84,60 0,3" fill="#c93b3b" />
+        <polygon points="90,0 84,0 0,57 0,60 6,60 90,3" fill="#c93b3b" />
+        <rect x="36" width="18" height="60" fill="#f5f1e8" />
+        <rect y="21" width="90" height="18" fill="#f5f1e8" />
+        <rect x="40" width="10" height="60" fill="#c93b3b" />
+        <rect y="25" width="90" height="10" fill="#c93b3b" />
+      </svg>
+    ),
+    H: (
+      // USA
+      <svg viewBox="0 0 90 60" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <rect width="90" height="60" fill="#f5f1e8" />
+        <rect y="0" width="90" height="10" fill="#c93b3b" />
+        <rect y="20" width="90" height="10" fill="#c93b3b" />
+        <rect y="40" width="90" height="10" fill="#c93b3b" />
+        <rect width="42" height="32" fill="#2d4fa3" />
+        <circle cx="10" cy="8" r="1.6" fill="#f5f1e8" />
+        <circle cx="20" cy="8" r="1.6" fill="#f5f1e8" />
+        <circle cx="30" cy="8" r="1.6" fill="#f5f1e8" />
+        <circle cx="10" cy="16" r="1.6" fill="#f5f1e8" />
+        <circle cx="20" cy="16" r="1.6" fill="#f5f1e8" />
+        <circle cx="30" cy="16" r="1.6" fill="#f5f1e8" />
+        <circle cx="10" cy="24" r="1.6" fill="#f5f1e8" />
+        <circle cx="20" cy="24" r="1.6" fill="#f5f1e8" />
+        <circle cx="30" cy="24" r="1.6" fill="#f5f1e8" />
+      </svg>
+    ),
   };
 
-  const crest = crests[group] || { code: group, bg: 'linear-gradient(135deg, #333, #555)', text: '#fff', border: 'rgba(255,255,255,0.3)' };
+  const flagSvg = flags[group];
+  if (!flagSvg) return null;
 
   return (
     <div
+      className="flag-badge"
       style={{
         width: `${size}px`,
         height: `${size}px`,
         borderRadius: '50%',
-        background: crest.bg,
-        border: `1.5px solid ${crest.border}`,
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
+        border: '1.5px solid rgba(255, 255, 255, 0.65)',
+        boxShadow: '0 3px 8px rgba(0, 0, 0, 0.7), inset 0 0 2px rgba(255, 255, 255, 0.4)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: `${Math.round(size * 0.42)}px`,
-        fontWeight: 800,
-        fontFamily: 'var(--font-mono)',
-        color: crest.text,
-        letterSpacing: '0.04em',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.6)',
-        flexShrink: 0,
       }}
     >
-      {crest.code}
+      {flagSvg}
     </div>
   );
 }

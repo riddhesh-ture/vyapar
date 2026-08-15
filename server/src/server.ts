@@ -1,4 +1,10 @@
-import type * as Party from 'partykit/server';
+import {
+  Server,
+  routePartykitRequest,
+  type Connection,
+  type ConnectionContext,
+  type WSMessage,
+} from 'partyserver';
 import type {
   GameState,
   GameConfig,
@@ -45,22 +51,24 @@ import {
   getHouseSellPrice,
 } from '@vyapar/game-logic';
 
-// ─── Server ──────────────────────────────────────────────────
+// ─── Cloudflare Durable Object Server ────────────────────────
 
-export default class VyaparServer implements Party.Server {
-  state: GameState;
+export class VyaparServer extends Server {
+  state!: GameState;
 
   /** Map connection ID → player ID */
   connectionToPlayer: Map<string, string> = new Map();
 
-  constructor(readonly room: Party.Room) {
-    // Initialize with an empty waiting state
-    this.state = this.createWaitingState(room.id);
+  onStart() {
+    this.state = this.createWaitingState(this.name);
   }
 
   // ── Lifecycle ────────────────────────────────────────────────
 
-  onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
+  onConnect(conn: Connection, ctx: ConnectionContext) {
+    if (!this.state) {
+      this.state = this.createWaitingState(this.name);
+    }
     const playerId = conn.id;
 
     // If game is in progress, check if this is a reconnect
@@ -100,7 +108,7 @@ export default class VyaparServer implements Party.Server {
     // Send room info to the connecting player
     this.sendTo(conn, {
       type: 'roomInfo',
-      roomId: this.room.id,
+      roomId: this.name,
       playerId,
     });
 
@@ -108,11 +116,11 @@ export default class VyaparServer implements Party.Server {
     this.broadcastState();
   }
 
-  onClose(conn: Party.Connection) {
+  onClose(conn: Connection) {
     const playerId = this.connectionToPlayer.get(conn.id);
     this.connectionToPlayer.delete(conn.id);
 
-    if (playerId && this.state.phase === 'waiting') {
+    if (playerId && this.state && this.state.phase === 'waiting') {
       // Remove from lobby
       this.state.players = this.state.players.filter(p => p.id !== playerId);
       this.addLog(`A player left the room.`);
@@ -121,10 +129,11 @@ export default class VyaparServer implements Party.Server {
     // During game: player stays in state (they might reconnect)
   }
 
-  onMessage(message: string, sender: Party.Connection) {
+  onMessage(sender: Connection, message: WSMessage) {
     let intent: PlayerIntent;
     try {
-      intent = JSON.parse(message) as PlayerIntent;
+      const text = typeof message === 'string' ? message : new TextDecoder().decode(message);
+      intent = JSON.parse(text) as PlayerIntent;
     } catch {
       this.sendTo(sender, { type: 'error', message: 'Invalid message format.' });
       return;
@@ -243,7 +252,7 @@ export default class VyaparServer implements Party.Server {
       rentFreePass: false,
       rentCollectionMultiplier: 1,
     }));
-    this.state = this.createWaitingState(this.room.id);
+    this.state = this.createWaitingState(this.name);
     this.state.players = roomPlayers;
     this.addLog('Game reset to lobby.');
   }
@@ -996,18 +1005,35 @@ export default class VyaparServer implements Party.Server {
 
   // ── Messaging ────────────────────────────────────────────────
 
-  sendTo(conn: Party.Connection, message: ServerMessage): void {
+  sendTo(conn: Connection, message: ServerMessage): void {
     conn.send(JSON.stringify(message));
   }
 
   broadcastState(): void {
+    if (!this.state) {
+      this.state = this.createWaitingState(this.name);
+    }
     const message: ServerMessage = {
       type: 'gameState',
       state: this.state,
     };
     const serialized = JSON.stringify(message);
-    for (const conn of this.room.getConnections()) {
-      conn.send(serialized);
-    }
+    this.broadcast(serialized);
   }
 }
+
+// ── Cloudflare Worker Fetch Entrypoint ───────────────────────
+
+export default {
+  async fetch(request: Request, env: any, ctx?: any) {
+    return (
+      (await routePartykitRequest(request, env)) ||
+      new Response('Vyapar Multiplayer Server is running on Cloudflare Workers', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      })
+    );
+  },
+};
+
+

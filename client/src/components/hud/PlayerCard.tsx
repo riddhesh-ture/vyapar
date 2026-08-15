@@ -3,7 +3,7 @@ import type { Player, GameState } from '@vyapar/game-logic';
 import { BOARD } from '@vyapar/game-logic';
 import { GotiToken } from '../board/GotiToken';
 import { PropertyBadge } from './PropertyBadge';
-import { CrownIcon, LockIcon, SkullIcon, PinIcon } from '../icons/Icons';
+import { CrownIcon, LockIcon, SkullIcon } from '../icons/Icons';
 
 interface PlayerCardProps {
   player: Player;

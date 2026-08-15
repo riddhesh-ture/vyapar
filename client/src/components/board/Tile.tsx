@@ -1,6 +1,5 @@
-import React from 'react';
 import type { GameState, Tile as TileType } from '@vyapar/game-logic';
-import { GROUP_COUNTRIES, GROUP_FLAGS } from '@vyapar/game-logic';
+import { GROUP_COUNTRIES } from '@vyapar/game-logic';
 import { GotiToken } from './GotiToken';
 import {
   CountryCrestBadge,
@@ -111,7 +110,7 @@ export function Tile({ tile, gameState, playerId, onSelectTile }: TileProps) {
 
           {/* Vector Country Crest Badge */}
           <div className="flag-bubble" title={country}>
-            <CountryCrestBadge group={tile.group} size={22} />
+            <CountryCrestBadge group={tile.group} size={26} />
           </div>
 
           {/* Owner strip */}
@@ -120,7 +119,6 @@ export function Tile({ tile, gameState, playerId, onSelectTile }: TileProps) {
           {/* Tile Content (Rotated for side columns) */}
           <div className={side === 'left' || side === 'right' ? 'tile-body-rotated' : 'tile-body'}>
             <div className="tile-name">{tile.name}</div>
-            <div className="tile-kind">{country}</div>
             <div className="tile-price">
               <span className="rs">₹</span>
               {tile.price?.toLocaleString()}

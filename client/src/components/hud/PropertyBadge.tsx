@@ -1,15 +1,14 @@
-import React from 'react';
 import type { Tile, PropertyState } from '@vyapar/game-logic';
 import { CountryCrestBadge, HouseIcon, HotelIcon } from '../icons/Icons';
 
 interface PropertyBadgeProps {
   tile: Tile;
   state: PropertyState;
-  tileIndex: number;
+  tileIndex?: number;
   onClick?: () => void;
 }
 
-export function PropertyBadge({ tile, state, tileIndex, onClick }: PropertyBadgeProps) {
+export function PropertyBadge({ tile, state, onClick }: PropertyBadgeProps) {
   return (
     <span
       onClick={onClick}
