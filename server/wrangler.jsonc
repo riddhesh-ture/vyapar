@@ -8,6 +8,10 @@
       {
         "name": "VyaparServer",
         "class_name": "VyaparServer"
+      },
+      {
+        "name": "main",
+        "class_name": "VyaparServer"
       }
     ]
   },

@@ -54,6 +54,10 @@ import {
 // ─── Cloudflare Durable Object Server ────────────────────────
 
 export class VyaparServer extends Server {
+  static options = {
+    hibernate: true,
+  };
+
   state!: GameState;
 
   /** Map connection ID → player ID */
@@ -1026,13 +1030,28 @@ export class VyaparServer extends Server {
 
 export default {
   async fetch(request: Request, env: any, ctx?: any) {
-    return (
-      (await routePartykitRequest(request, env)) ||
-      new Response('Vyapar Multiplayer Server is running on Cloudflare Workers', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' },
-      })
-    );
+    // 1. Route via partyserver handler
+    const partyResponse = await routePartykitRequest(request, env, { cors: true });
+    if (partyResponse) return partyResponse;
+
+    // 2. Direct WebSocket upgrade fallback for any room endpoint
+    const url = new URL(request.url);
+    const doBinding = env.VyaparServer || env.main;
+    if (doBinding && request.headers.get('Upgrade')?.toLowerCase() === 'websocket') {
+      const parts = url.pathname.split('/').filter(Boolean);
+      const roomId = parts[parts.length - 1] || 'default-room';
+      const id = doBinding.idFromName(roomId);
+      const stub = doBinding.get(id);
+      return stub.fetch(request);
+    }
+
+    return new Response('Vyapar Multiplayer Server is running on Cloudflare Workers', {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   },
 };
 

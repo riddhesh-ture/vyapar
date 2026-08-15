@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import PartySocket from 'partysocket';
 import type { GameState, PlayerIntent, ServerMessage } from '@vyapar/game-logic';
 
-const PARTY_HOST = import.meta.env.VITE_PARTY_HOST || 'localhost:1999';
+const rawHost = (import.meta.env.VITE_PARTY_HOST as string | undefined) || 'localhost:1999';
+const PARTY_HOST = rawHost.replace(/^(https?:\/\/|wss?:\/\/)/, '').replace(/\/$/, '');
 
 interface UseVyaparReturn {
   /** Current game state from the server */
