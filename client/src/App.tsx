@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useVyapar } from './hooks/useVyapar';
 import { LobbyHome } from './components/Lobby';
 import { WaitingRoom } from './components/WaitingRoom';
@@ -25,11 +25,13 @@ function App() {
     connect(roomCode);
   };
 
-  // Once connected, set the player name
-  if (connected && playerId && pendingName) {
-    sendIntent({ type: 'setName', name: pendingName });
-    setPendingName('');
-  }
+  // Once connected, set the player name via useEffect
+  useEffect(() => {
+    if (connected && playerId && pendingName) {
+      sendIntent({ type: 'setName', name: pendingName });
+      setPendingName('');
+    }
+  }, [connected, playerId, pendingName, sendIntent]);
 
   // Determine which screen to show
   let screen: AppScreen = 'home';
@@ -39,10 +41,10 @@ function App() {
     screen = 'connecting';
   }
 
-  const isGameActive = gameState && gameState.phase !== 'waiting';
+  const isGameActive = Boolean(gameState && gameState.phase !== 'waiting');
 
   return (
-    <div className="app">
+    <div className={`app ${isGameActive ? 'in-game' : ''}`}>
       {/* Error toast */}
       {error && (
         <div className="error-toast" onClick={clearError}>

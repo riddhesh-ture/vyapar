@@ -1,84 +1,89 @@
-import type { GameState, PropertyGroup } from '@vyapar/game-logic';
-import { BOARD, GROUP_FLAGS } from '@vyapar/game-logic';
+import type { GameState, PropertyGroup, PlayerIntent } from '@vyapar/game-logic';
+import { BOARD, GROUP_FLAGS, GROUP_COUNTRIES } from '@vyapar/game-logic';
+import { getGotiForPlayerIndex } from '../gotis';
 
 interface BoardProps {
   gameState: GameState;
   playerId: string;
+  sendIntent?: (intent: PlayerIntent) => void;
 }
 
-const PLAYER_COLORS = [
-  '#EF4444', '#3B82F6', '#22C55E', '#F59E0B',
-  '#8B5CF6', '#EC4899', '#06B6D4', '#F97316',
-];
+const OWNER_CLASSES = ['owner-red', 'owner-blue', 'owner-green', 'owner-yellow', 'owner-purple'];
 
-const GROUP_COLORS: Record<PropertyGroup, string> = {
-  A: '#7B2D8E',
-  B: '#0EA5E9',
-  C: '#EC4899',
-  D: '#F97316',
-  E: '#EF4444',
-  F: '#EAB308',
-  G: '#22C55E',
-  H: '#1E40AF',
+const GROUP_WASHES: Record<PropertyGroup, string> = {
+  A: 'brazil',
+  B: 'france',
+  C: 'china',
+  D: 'japan',
+  E: 'italy',
+  F: 'germany',
+  G: 'uk',
+  H: 'usa',
 };
 
-/**
- * Map tile index → CSS grid position { col, row }.
- * The board is an 11×11 grid:
- * - Row 1 = top, Row 11 = bottom
- * - Col 1 = left, Col 11 = right
- */
-function getTileGridPosition(index: number): { col: number; row: number; side: string } {
-  // Bottom row: tiles 0-10 (GO on right, Jail on left)
-  if (index <= 10) {
-    return { col: 11 - index, row: 11, side: 'bottom' };
-  }
-  // Left column: tiles 11-19 (bottom to top)
-  if (index <= 19) {
-    return { col: 1, row: 11 - (index - 10), side: 'left' };
-  }
-  // Top row: tiles 20-30 (left to right)
-  if (index <= 30) {
-    return { col: index - 20 + 1, row: 1, side: 'top' };
-  }
-  // Right column: tiles 31-39 (top to bottom)
-  return { col: 11, row: index - 30 + 1, side: 'right' };
+function getTileGridPosition(index: number): { col: number; row: number; side: 'bottom' | 'left' | 'top' | 'right' } {
+  if (index === 0) return { col: 1, row: 1, side: 'top' };
+  if (index < 10) return { col: index + 1, row: 1, side: 'top' };
+  if (index === 10) return { col: 11, row: 1, side: 'right' };
+  if (index < 20) return { col: 11, row: index - 10 + 1, side: 'right' };
+  if (index === 20) return { col: 11, row: 11, side: 'bottom' };
+  if (index < 30) return { col: 11 - (index - 20), row: 11, side: 'bottom' };
+  if (index === 30) return { col: 1, row: 11, side: 'left' };
+  return { col: 1, row: 11 - (index - 30), side: 'left' };
 }
 
-function getTypeIcon(type: string, cornerType?: string, deckType?: string): string {
-  switch (type) {
-    case 'corner':
-      switch (cornerType) {
-        case 'go': return '→';
-        case 'jail': return '🔒';
-        case 'freeParking': return '🅿️';
-        case 'goToJail': return '👮';
-        default: return '';
-      }
-    case 'railway': return '✈️';
-    case 'utility': return '⚡';
-    case 'tax': return '💰';
-    case 'card':
-      switch (deckType) {
-        case 'chance': return '❓';
-        case 'communityChest': return '📦';
-        case 'surprise': return '🎁';
-        default: return '🃏';
-      }
-    case 'fee': return '🏠';
-    case 'skip': return '😴';
-    default: return '';
+function getSpecialTileDetails(tile: typeof BOARD[number]): { washClass: string; icon: string; kind: string } {
+  if (tile.type === 'corner') {
+    switch (tile.cornerType) {
+      case 'go': return { washClass: 'go', icon: '🏁', kind: 'START' };
+      case 'jail': return { washClass: 'jail', icon: '⛓️', kind: 'In Prison' };
+      case 'freeParking': return { washClass: 'vacation', icon: '🏝️', kind: 'Vacation' };
+      case 'goToJail': return { washClass: 'jail', icon: '💀', kind: 'Go to prison' };
+      default: return { washClass: 'jail', icon: '📍', kind: 'Corner' };
+    }
   }
+  if (tile.type === 'railway') return { washClass: 'airport', icon: '✈️', kind: 'Airport' };
+  if (tile.type === 'utility') return { washClass: 'company', icon: '⚡', kind: 'Company' };
+  if (tile.type === 'tax') return { washClass: 'tax', icon: '💰', kind: 'Tax' };
+  if (tile.type === 'card') {
+    return {
+      washClass: 'card',
+      icon: tile.deck === 'chance' ? '❓' : tile.deck === 'communityChest' ? '📦' : '🎁',
+      kind: tile.deck === 'chance' ? 'Chance' : tile.deck === 'communityChest' ? 'Chest' : 'Surprise',
+    };
+  }
+  if (tile.type === 'fee') return { washClass: 'shop', icon: '🏪', kind: 'Business' };
+  if (tile.type === 'skip') return { washClass: 'agri', icon: '🌾', kind: 'Rest' };
+  return { washClass: 'company', icon: '🏠', kind: 'Property' };
 }
 
-export function Board({ gameState, playerId }: BoardProps) {
+function DieFace({ value }: { value: number }) {
+  const faceVal = Math.min(Math.max(value, 1), 6);
+  return (
+    <div className={`die face-${faceVal}`}>
+      <div className="pip p1"></div>
+      <div className="pip p2"></div>
+      <div className="pip p3"></div>
+      <div className="pip p4"></div>
+      <div className="pip p5"></div>
+      <div className="pip p6"></div>
+      <div className="pip p7"></div>
+      <div className="pip p8"></div>
+      <div className="pip p9"></div>
+    </div>
+  );
+}
+
+export function Board({ gameState, playerId, sendIntent }: BoardProps) {
+  const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+  const isMyTurn = currentPlayer?.id === playerId;
+
   return (
     <div className="board">
       <div className="board-grid">
         {BOARD.map((tile) => {
           const { col, row, side } = getTileGridPosition(tile.index);
-          const isCorner = tile.type === 'corner' || tile.index === 0 || tile.index === 10 || tile.index === 20 || tile.index === 30;
-          const groupColor = tile.group ? GROUP_COLORS[tile.group] : undefined;
+          const isProperty = tile.type === 'property' && tile.group;
           const prop = gameState.properties[tile.index];
           const owner = prop?.ownerId
             ? gameState.players.find(p => p.id === prop.ownerId)
@@ -86,89 +91,101 @@ export function Board({ gameState, playerId }: BoardProps) {
           const ownerIndex = owner
             ? gameState.players.findIndex(p => p.id === owner.id)
             : -1;
+          const ownerClass = ownerIndex >= 0 ? OWNER_CLASSES[ownerIndex % OWNER_CLASSES.length] : 'unclaimed';
 
           // Players on this tile
           const playersHere = gameState.players.filter(
             p => p.position === tile.index && !p.bankrupt
           );
 
+          if (isProperty && tile.group) {
+            const country = GROUP_COUNTRIES[tile.group];
+            const flag = GROUP_FLAGS[tile.group];
+            const wash = GROUP_WASHES[tile.group];
+
+            return (
+              <div
+                key={tile.index}
+                className={`tile-wrap side-${side}`}
+                style={{ gridColumn: col, gridRow: row }}
+                title={`${tile.name} (${country}) — ₹${tile.price}`}
+              >
+                <div className="tile-prop">
+                  <div className={`wash ${wash}`}></div>
+
+                  {/* Circular Flag Badge sitting on inner border edge */}
+                  <div className="circle-flag" title={country}>
+                    {flag}
+                  </div>
+
+                  {/* Price Tag Pill */}
+                  <div className="price-pill">
+                    <span className="rs">₹</span>
+                    {tile.price?.toLocaleString()}
+                  </div>
+
+                  {/* Tile Name */}
+                  <div className="tile-name-text">
+                    {tile.name}
+                  </div>
+
+                  {/* Players / Goti tokens */}
+                  <div className={`goti-slot ${playersHere.length === 0 ? 'empty' : ''}`}>
+                    {playersHere.map((p) => {
+                      const pIdx = gameState.players.findIndex(pl => pl.id === p.id);
+                      const goti = getGotiForPlayerIndex(pIdx);
+                      return (
+                        <div
+                          key={p.id}
+                          className={`goti goti-board ${goti.className}`}
+                          title={p.name}
+                        >
+                          {goti.emoji}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Owner strip */}
+                  <div className={`owner ${ownerClass}`}>
+                    {owner ? owner.name[0]?.toUpperCase() : ''}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Special Square Tile
+          const details = getSpecialTileDetails(tile);
+
           return (
             <div
               key={tile.index}
-              className={`tile tile-${side} ${isCorner ? 'tile-corner' : ''} ${tile.type === 'property' ? 'tile-property' : ''}`}
-              style={{
-                gridColumn: col,
-                gridRow: row,
-              }}
-              title={`${tile.name}${tile.price ? ` — $${tile.price}` : ''}`}
+              className={`sq side-${side}`}
+              style={{ gridColumn: col, gridRow: row }}
+              title={tile.name}
             >
-              {/* Color bar for properties */}
-              {groupColor && (
-                <div
-                  className="tile-color-bar"
-                  style={{ backgroundColor: groupColor }}
-                >
-                  {prop && prop.houses > 0 && (
-                    <div className="tile-houses">
-                      {prop.houses === 5
-                        ? <span className="hotel">🏨</span>
-                        : Array.from({ length: prop.houses }).map((_, i) => (
-                            <span key={i} className="house">🏠</span>
-                          ))
-                      }
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Tile content */}
-              <div className="tile-content">
-                {tile.group && (
-                  <span className="tile-icon">
-                    {GROUP_FLAGS[tile.group]}
-                  </span>
-                )}
-                {!tile.group && (
-                  <span className="tile-icon">
-                    {getTypeIcon(tile.type, tile.cornerType, tile.deck)}
-                  </span>
-                )}
-                <span className="tile-name">{tile.name}</span>
-                {tile.price && <span className="tile-price">${tile.price.toLocaleString()}</span>}
-              </div>
-
-              {/* Ownership indicator */}
-              {owner && (
-                <div
-                  className="tile-owner-dot"
-                  style={{ backgroundColor: PLAYER_COLORS[ownerIndex] ?? '#666' }}
-                  title={`Owned by ${owner.name}`}
-                />
-              )}
-
-              {/* Mortgage indicator */}
-              {prop?.mortgaged && (
-                <div className="tile-mortgage-badge">M</div>
-              )}
-
-              {/* Player tokens */}
-              {playersHere.length > 0 && (
-                <div className="tile-players">
+              <div className={details.washClass}></div>
+              <div className="sq-content">
+                <div className="sq-icon">{details.icon}</div>
+                <div className="sq-name">{tile.name}</div>
+                <div className="sq-kind">{details.kind}</div>
+                <div className={`goti-slot ${playersHere.length === 0 ? 'empty' : ''}`} style={{ marginBottom: 0 }}>
                   {playersHere.map((p) => {
                     const pIdx = gameState.players.findIndex(pl => pl.id === p.id);
+                    const goti = getGotiForPlayerIndex(pIdx);
                     return (
                       <div
                         key={p.id}
-                        className={`player-token ${p.id === playerId ? 'is-you' : ''}`}
-                        style={{ backgroundColor: PLAYER_COLORS[pIdx] }}
+                        className={`goti goti-board ${goti.className}`}
                         title={p.name}
                       >
-                        {p.name[0]?.toUpperCase()}
+                        {goti.emoji}
                       </div>
                     );
                   })}
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
@@ -176,25 +193,45 @@ export function Board({ gameState, playerId }: BoardProps) {
         {/* Center area */}
         <div className="board-center" style={{ gridColumn: '2 / 11', gridRow: '2 / 11' }}>
           <div className="board-center-content">
-            <h2 className="board-title">
-              <span className="title-accent">VYAPAR</span>
-            </h2>
+            <div className="wordmark" style={{ fontSize: '36px' }}>
+              VYA<span className="accent">PAR</span>
+            </div>
+
             {gameState.dice && (
-              <div className="dice-display">
-                <div className="die">{getDiceFace(gameState.dice.die1)}</div>
-                <div className="die">{getDiceFace(gameState.dice.die2)}</div>
+              <div className="dice-block">
+                <div className="dice-row">
+                  <DieFace value={gameState.dice.die1} />
+                  <DieFace value={gameState.dice.die2} />
+                </div>
               </div>
             )}
+
+            {/* Interactive Roll Dice Button in Board Center */}
+            {isMyTurn && gameState.phase === 'rolling' && sendIntent && (
+              <button
+                className="btn"
+                onClick={() => sendIntent({ type: 'rollDice' })}
+                style={{ padding: '14px 36px', fontSize: '16px' }}
+              >
+                🎲 Roll Dice
+              </button>
+            )}
+
+            {currentPlayer && (
+              <div className="turn-banner">
+                <div className="turn-dot"></div>
+                <span>It's <b>{currentPlayer.name}</b>'s turn</span>
+              </div>
+            )}
+
             {gameState.currentCard && (
-              <div className="current-card-display">
-                <div className={`card-popup card-${gameState.currentCard.deck}`}>
-                  <span className="card-deck-label">
-                    {gameState.currentCard.deck === 'communityChest' ? 'Community Chest'
-                      : gameState.currentCard.deck === 'chance' ? 'Chance'
-                      : 'Surprise'}
-                  </span>
-                  <p className="card-text">{gameState.currentCard.text}</p>
-                </div>
+              <div className="card-popup card-content" style={{ marginTop: '6px', padding: '10px 16px' }}>
+                <span className="sq-kind">
+                  {gameState.currentCard.deck}
+                </span>
+                <p style={{ fontSize: '13px', marginTop: '4px', textAlign: 'center', color: 'var(--ink)' }}>
+                  {gameState.currentCard.text}
+                </p>
               </div>
             )}
           </div>
@@ -202,9 +239,4 @@ export function Board({ gameState, playerId }: BoardProps) {
       </div>
     </div>
   );
-}
-
-function getDiceFace(value: number): string {
-  const faces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-  return faces[value] ?? '?';
 }

@@ -20,8 +20,9 @@ export function GameView({ gameState, playerId, sendIntent }: GameViewProps) {
 
       {/* Center: board */}
       <main className="game-main">
-        <Board gameState={gameState} playerId={playerId} />
+        <Board gameState={gameState} playerId={playerId} sendIntent={sendIntent} />
       </main>
+
 
       {/* Right sidebar: actions + log */}
       <aside className="game-sidebar game-sidebar-right">

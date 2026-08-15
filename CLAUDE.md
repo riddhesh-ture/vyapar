@@ -77,8 +77,12 @@ vyapar/
 - **Language:** Clean English-only interface ("VYAPAR" header branding).
 
 ### 3. Board UI Layout (RichUp.io Inspired)
-- **11x11 Grid Layout:** Corner tiles set to `2.2fr` size for higher prominence.
-- **Vertical Rotated Text:** Left and right side tile contents use `writing-mode: vertical-rl` so text is easily readable without line truncation.
+- **11x11 Grid Layout:** Corner tiles set to `2fr` / `2.2fr` size for higher prominence.
+- **Absolute Side Positioning System:**
+  - `circle-flag`: Pinned absolutely to the inner edge facing the board center (`top: -13px` for bottom, `bottom: -13px` for top, `right: -13px` for left, `left: -13px` for right).
+  - `price-pill`: Pinned absolutely to the outer edge of each tile (`bottom: 4px` for bottom, `top: 4px` for top, `left: 4px` for left, `right: 4px` for right).
+  - `goti-slot`: Positioned absolutely (`bottom: 3px` / `top: 16px`) so player tokens sit cleanly without fighting in-flow elements; empty state hidden (`display: none`).
+  - `tile-name-text`: The sole in-flow element, centered with side padding (`white-space: nowrap`) ensuring city names remain single-line horizontal text with zero wrapping or off-center dragging.
 - **Visual Features:**
   - `12px` thick color bars facing the center of the board.
   - Country flag emojis displayed on each city tile.
