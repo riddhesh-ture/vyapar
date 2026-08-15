@@ -73,16 +73,17 @@ export class VyaparServer extends Server {
     if (!this.state) {
       this.state = this.createWaitingState(this.name);
     }
-    const playerId = conn.id;
+    const url = new URL(ctx.request.url);
+    const playerId = url.searchParams.get('_pk') || conn.id;
 
     // If game is in progress, check if this is a reconnect
     const existingPlayer = this.state.players.find(p => p.id === playerId);
 
     if (!existingPlayer && this.state.phase !== 'waiting') {
-      // Game already started, reject new players
+      // Game already started and not an existing player, reject
       this.sendTo(conn, {
         type: 'error',
-        message: 'Game already in progress. Cannot join.',
+        message: 'Game already in progress. Cannot join as a new player.',
       });
       return;
     }
