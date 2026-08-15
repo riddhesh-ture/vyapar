@@ -22,9 +22,11 @@ function App() {
   const [pendingGoti, setPendingGoti] = useState<string>('');
 
   const handleJoin = (roomCode: string, playerName: string, gotiId?: string) => {
+    const normalizedCode = roomCode.trim().toUpperCase();
     setPendingName(playerName);
     if (gotiId) setPendingGoti(gotiId);
-    connect(roomCode);
+    window.history.replaceState(null, '', `/?room=${normalizedCode}`);
+    connect(normalizedCode);
   };
 
   // Once connected, set the player name & goti via useEffect

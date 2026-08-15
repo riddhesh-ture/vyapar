@@ -41,14 +41,16 @@ export function useVyapar(): UseVyaparReturn {
       socketRef.current = null;
     }
 
+    const normalizedRoom = newRoomId.trim().toUpperCase();
+
     const socket = new PartySocket({
       host: PARTY_HOST,
-      room: newRoomId,
+      room: normalizedRoom,
     });
 
     socket.addEventListener('open', () => {
       setConnected(true);
-      setRoomId(newRoomId);
+      setRoomId(normalizedRoom);
       setError(null);
     });
 

@@ -73,8 +73,7 @@ export class VyaparServer extends Server {
     if (!this.state) {
       this.state = this.createWaitingState(this.name);
     }
-    const url = new URL(ctx.request.url);
-    const playerId = url.searchParams.get('_pk') || conn.id;
+    const playerId = conn.id;
 
     // If game is in progress, check if this is a reconnect
     const existingPlayer = this.state.players.find(p => p.id === playerId);
