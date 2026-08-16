@@ -55,13 +55,10 @@ import {
 
 export class VyaparServer extends Server {
   static options = {
-    hibernate: true,
+    hibernate: false,
   };
 
   state!: GameState;
-
-  /** Map connection ID → player ID */
-  connectionToPlayer: Map<string, string> = new Map();
 
   onStart() {
     this.state = this.createWaitingState(this.name);
@@ -73,6 +70,7 @@ export class VyaparServer extends Server {
     if (!this.state) {
       this.state = this.createWaitingState(this.name);
     }
+
     const playerId = conn.id;
 
     // If game is in progress, check if this is a reconnect
@@ -84,6 +82,7 @@ export class VyaparServer extends Server {
         type: 'error',
         message: 'Game already in progress. Cannot join as a new player.',
       });
+      conn.close(4001, 'Game in progress');
       return;
     }
 
@@ -94,7 +93,13 @@ export class VyaparServer extends Server {
           type: 'error',
           message: 'Room is full (max 8 players).',
         });
+        conn.close(4003, 'Room full');
         return;
+      }
+
+      // First player to join becomes the permanent room host
+      if (!this.state.hostId || this.state.players.length === 0) {
+        this.state.hostId = playerId;
       }
 
       const player = createPlayer(
@@ -106,8 +111,6 @@ export class VyaparServer extends Server {
 
       this.addLog(`${player.name} joined the room.`);
     }
-
-    this.connectionToPlayer.set(conn.id, playerId);
 
     // Send room info to the connecting player
     this.sendTo(conn, {
@@ -121,14 +124,19 @@ export class VyaparServer extends Server {
   }
 
   onClose(conn: Connection) {
-    const playerId = this.connectionToPlayer.get(conn.id);
-    this.connectionToPlayer.delete(conn.id);
+    const playerId = conn.id;
 
     if (playerId && this.state && this.state.phase === 'waiting') {
-      // Remove from lobby
-      this.state.players = this.state.players.filter(p => p.id !== playerId);
-      this.addLog(`A player left the room.`);
-      this.broadcastState();
+      // Check if there are any other active connections for this same playerId
+      const hasOtherConn = Array.from(this.getConnections()).some(c => c.id === playerId && c !== conn);
+      if (!hasOtherConn) {
+        this.state.players = this.state.players.filter(p => p.id !== playerId);
+        if (this.state.hostId === playerId) {
+          this.state.hostId = this.state.players[0]?.id;
+        }
+        this.addLog(`A player left the room.`);
+        this.broadcastState();
+      }
     }
     // During game: player stays in state (they might reconnect)
   }
@@ -143,11 +151,7 @@ export class VyaparServer extends Server {
       return;
     }
 
-    const playerId = this.connectionToPlayer.get(sender.id);
-    if (!playerId) {
-      this.sendTo(sender, { type: 'error', message: 'Not connected.' });
-      return;
-    }
+    const playerId = sender.id;
 
     try {
       this.handleIntent(playerId, intent);
@@ -234,6 +238,15 @@ export class VyaparServer extends Server {
     const player = this.getPlayer(playerId);
     const trimmed = name.trim().slice(0, 20);
     if (!trimmed) throw new Error('Name cannot be empty.');
+
+    // Check if another player in this room already has this name (case-insensitive)
+    const nameTaken = this.state.players.some(
+      p => p.id !== playerId && p.name.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+    if (nameTaken) {
+      throw new Error(`The name "${trimmed}" is already taken in this room. Please choose a different name.`);
+    }
+
     player.name = trimmed;
     this.addLog(`${player.name} updated their name.`);
   }
@@ -328,15 +341,16 @@ export class VyaparServer extends Server {
 
   handleUpdateConfig(playerId: string, config: Partial<GameConfig>): void {
     if (this.state.phase !== 'waiting') throw new Error('Cannot change config during game.');
-    // Only first player (host) can change config
-    if (this.state.players[0]?.id !== playerId) throw new Error('Only the host can change settings.');
+    const hostId = this.state.hostId || this.state.players[0]?.id;
+    if (hostId !== playerId) throw new Error('Only the host can change settings.');
     this.state.config = { ...this.state.config, ...config };
     this.addLog('Game settings updated.');
   }
 
   handleStartGame(playerId: string): void {
     if (this.state.phase !== 'waiting') throw new Error('Game already started.');
-    if (this.state.players[0]?.id !== playerId) throw new Error('Only the host can start the game.');
+    const hostId = this.state.hostId || this.state.players[0]?.id;
+    if (hostId !== playerId) throw new Error('Only the host can start the game.');
     if (this.state.players.length < 2) throw new Error('Need at least 2 players.');
 
     // Determine turn order: highest single die roll goes first

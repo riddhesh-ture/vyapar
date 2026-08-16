@@ -51,7 +51,7 @@ export function PlayerCard({
         <div className="hud-info">
           <div className="hud-name">
             <span>{player.name}</span>
-            {playerIndex === 0 && <CrownIcon size={13} color="var(--saffron)" />}
+            {((gameState.hostId || gameState.players[0]?.id) === player.id) && <CrownIcon size={13} color="var(--saffron)" />}
             {isYou && <span className="you-tag">(You)</span>}
           </div>
           <div className="hud-cash">

@@ -1,6 +1,5 @@
 import React from 'react';
 import type { GameState, PlayerIntent } from '@vyapar/game-logic';
-import { GOTIS } from '../../gotis';
 import { GotiToken } from '../board/GotiToken';
 import { RoomShareBox } from './RoomShareBox';
 import { RuleSettingsCard } from './RuleSettingsCard';
@@ -14,14 +13,13 @@ interface WaitingRoomProps {
 }
 
 export function WaitingRoom({ gameState, playerId, roomId, sendIntent }: WaitingRoomProps) {
-  const isHost = gameState.players[0]?.id === playerId;
+  const isHost = (gameState.hostId || gameState.players[0]?.id) === playerId;
   const canStart = isHost && gameState.players.length >= 2;
 
   const handleStart = () => {
     sendIntent({ type: 'startGame' });
   };
 
-  const myPlayer = gameState.players.find(p => p.id === playerId);
   const emptySlotsCount = Math.max(0, 8 - gameState.players.length);
 
   return (
@@ -42,13 +40,14 @@ export function WaitingRoom({ gameState, playerId, roomId, sendIntent }: Waiting
       <div className="hud-row">
         {gameState.players.map((player, idx) => {
           const isYou = player.id === playerId;
+          const isPlayerHost = (gameState.hostId || gameState.players[0]?.id) === player.id;
           return (
             <div key={player.id} className={`hud-chip ${isYou ? 'active-turn' : ''}`}>
               <GotiToken player={player} playerIndex={idx} size="md" />
               <div className="hud-info">
                 <div className="hud-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span>{player.name}</span>
-                  {idx === 0 && <CrownIcon size={13} color="var(--saffron)" />}
+                  {isPlayerHost && <CrownIcon size={13} color="var(--saffron)" />}
                   {isYou && <span style={{ fontSize: '10px', color: 'var(--saffron)' }}>(You)</span>}
                 </div>
                 <div className="hud-cash">
@@ -76,29 +75,7 @@ export function WaitingRoom({ gameState, playerId, roomId, sendIntent }: Waiting
         ))}
       </div>
 
-      {/* Token Switcher */}
-      <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.03)', padding: '14px 18px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-        <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-dim)', marginBottom: '10px' }}>
-          Change Your Token
-        </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {GOTIS.map((goti) => {
-            const isSelected = (myPlayer?.gotiId || GOTIS[gameState.players.findIndex(p => p.id === playerId) % GOTIS.length]?.id) === goti.id;
-            return (
-              <button
-                key={goti.id}
-                type="button"
-                onClick={() => sendIntent({ type: 'setGoti', gotiId: goti.id })}
-                className={`picker-token ${goti.className} ${isSelected ? 'selected' : ''}`}
-                style={{ width: '38px', height: '38px', cursor: 'pointer', border: isSelected ? '2px solid var(--saffron)' : '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
-                title={goti.name}
-              >
-                {goti.renderIcon({ size: 18, color: '#ffffff' })}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+     
 
       {/* Game Settings Section */}
       <div className="section-label" style={{ margin: '24px 0 10px' }}>

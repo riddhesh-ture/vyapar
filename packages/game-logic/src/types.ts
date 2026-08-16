@@ -199,6 +199,7 @@ export interface GameLogEntry {
 
 export interface GameState {
   roomId: string;
+  hostId?: string;
   config: GameConfig;
   players: Player[];
   /** Keyed by tile index — only tiles that can be owned */

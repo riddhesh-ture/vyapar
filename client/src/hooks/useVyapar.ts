@@ -26,6 +26,32 @@ interface UseVyaparReturn {
   clearError: () => void;
 }
 
+function getOrCreateSessionId(): string {
+  try {
+    let sid = sessionStorage.getItem('vyapar_session_id');
+    if (!sid) {
+      sid = 'p_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+      sessionStorage.setItem('vyapar_session_id', sid);
+    }
+    return sid;
+  } catch {
+    return 'p_' + Math.random().toString(36).substring(2, 10);
+  }
+}
+
+function getOrCreateDeviceId(): string {
+  try {
+    let did = localStorage.getItem('vyapar_device_id');
+    if (!did) {
+      did = 'dev_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+      localStorage.setItem('vyapar_device_id', did);
+    }
+    return did;
+  } catch {
+    return 'dev_' + Math.random().toString(36).substring(2, 10);
+  }
+}
+
 export function useVyapar(): UseVyaparReturn {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -42,10 +68,12 @@ export function useVyapar(): UseVyaparReturn {
     }
 
     const normalizedRoom = newRoomId.trim().toUpperCase();
+    const sessionId = getOrCreateSessionId();
 
     const socket = new PartySocket({
       host: PARTY_HOST,
       room: normalizedRoom,
+      id: sessionId,
     });
 
     socket.addEventListener('open', () => {
@@ -68,8 +96,6 @@ export function useVyapar(): UseVyaparReturn {
             break;
           case 'error':
             setError(message.message);
-            // Auto-clear error after 5 seconds
-            setTimeout(() => setError(null), 5000);
             break;
         }
       } catch {
@@ -77,8 +103,13 @@ export function useVyapar(): UseVyaparReturn {
       }
     });
 
-    socket.addEventListener('close', () => {
+    socket.addEventListener('close', (event: CloseEvent) => {
       setConnected(false);
+      if (event.code === 4001 || event.code === 4002 || event.code === 4003) {
+        setGameState(null);
+        setPlayerId(null);
+        setRoomId(null);
+      }
     });
 
     socket.addEventListener('error', () => {
