@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { GameState, PlayerIntent } from '@vyapar/game-logic';
 import { BOARD } from '@vyapar/game-logic';
 import { GavelIcon, CountryCrestBadge } from '../icons/Icons';
@@ -9,7 +9,10 @@ interface AuctionArenaProps {
   sendIntent: (intent: PlayerIntent) => void;
 }
 
+const QUICK_BIDS = [50, 100, 500];
+
 export function AuctionArena({ gameState, playerId, sendIntent }: AuctionArenaProps) {
+  const [customBid, setCustomBid] = useState('');
   const auction = gameState.auction;
   if (!auction) return null;
 
@@ -20,78 +23,128 @@ export function AuctionArena({ gameState, playerId, sendIntent }: AuctionArenaPr
   const minBid = Math.max(auction.currentBid + 10, 10);
   const me = gameState.players.find(p => p.id === playerId);
 
+  const handleCustomBid = () => {
+    const amount = parseInt(customBid, 10);
+    if (!isNaN(amount) && amount >= minBid) {
+      sendIntent({ type: 'placeBid', amount });
+      setCustomBid('');
+    }
+  };
+
   return (
-    <div
-      style={{
-        padding: '16px',
-        background: 'radial-gradient(ellipse at center, rgba(242, 169, 59, 0.08), rgba(18, 18, 28, 0.95))',
-        borderRadius: '18px',
-        border: '1.5px solid rgba(242, 169, 59, 0.35)',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-      }}
-    >
+    <div className="aa-card">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ padding: '8px', background: 'rgba(242, 169, 59, 0.15)', borderRadius: '10px', color: 'var(--saffron)' }}>
-          <GavelIcon size={20} color="var(--saffron)" />
+      <div className="aa-header">
+        <div className="aa-header-left">
+          <div className="aa-eyebrow">Live Auction</div>
+          <div className="aa-title">{tile.name}</div>
+          {tile.group && (
+            <div className="aa-subtitle">Group {tile.group} · ₹{tile.price?.toLocaleString()}</div>
+          )}
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--saffron)', fontWeight: 700 }}>
-            Live Auction
-          </div>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--ink)', fontFamily: 'var(--font-serif)' }}>
-            {tile.name}
-          </div>
-        </div>
-        {tile.group && <CountryCrestBadge group={tile.group} size={28} />}
+        {tile.group && <CountryCrestBadge group={tile.group} size={36} />}
       </div>
 
-      {/* Current Bid Display */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.04)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
-        <div>
-          <div style={{ fontSize: '10px', color: 'var(--ink-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Highest Bid</div>
-          <div style={{ fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--saffron)' }}>
-            ₹{auction.currentBid.toLocaleString()}
+      {/* Current bid display */}
+      <div className="aa-bid-display">
+        <div className="aa-bid-left">
+          <div className="aa-bid-label">Highest Bid</div>
+          <div className="aa-bid-amount">
+            <span className="rs">₹</span>
+            {auction.currentBid > 0 ? auction.currentBid.toLocaleString() : '—'}
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '10px', color: 'var(--ink-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Leader</div>
-          <div style={{ fontSize: '14px', fontWeight: 700, color: currentHighestBidder ? 'var(--ink)' : 'var(--ink-dim)', fontFamily: 'var(--font-serif)' }}>
-            {currentHighestBidder ? currentHighestBidder.name : 'No bids yet'}
+        <div className="aa-bid-right">
+          <div className="aa-bid-label">Leader</div>
+          <div className="aa-bid-leader">
+            {currentHighestBidder?.name ?? 'No bids yet'}
           </div>
         </div>
       </div>
 
-      {/* Action Area */}
+      {/* Participants status */}
+      <div className="aa-participants">
+        {auction.activeParticipants.map(pid => {
+          const p = gameState.players.find(pl => pl.id === pid);
+          const isCurrent = pid === currentBidder;
+          const hasPassed = auction.passed.includes(pid);
+          return (
+            <div
+              key={pid}
+              className={`aa-participant ${isCurrent ? 'aa-participant-active' : ''} ${hasPassed ? 'aa-participant-passed' : ''}`}
+            >
+              <span className="aa-p-name">{p?.name ?? '?'}</span>
+              {hasPassed && <span className="aa-p-tag">Passed</span>}
+              {isCurrent && !hasPassed && <span className="aa-p-tag aa-p-tag-active">Bidding</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Action area */}
       {isMyBid ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontSize: '12px', color: 'var(--saffron)', textAlign: 'center', fontWeight: 700 }}>
-            ⚡ It's your turn to bid!
+        <div className="aa-actions">
+          <div className="aa-my-turn-label">⚡ Your turn to bid!</div>
+
+          {/* Quick bid buttons */}
+          <div className="aa-quick-bids">
+            {QUICK_BIDS.map(inc => {
+              const amount = auction.currentBid + inc;
+              const canAfford = !me || me.cash >= amount;
+              return (
+                <button
+                  key={inc}
+                  className="btn-ghost aa-quick-btn"
+                  disabled={!canAfford}
+                  onClick={() => sendIntent({ type: 'placeBid', amount })}
+                >
+                  +₹{inc}
+                </button>
+              );
+            })}
           </div>
-          <div className="action-btns-row">
+
+          {/* Min bid + custom */}
+          <div className="aa-main-bid-row">
             <button
-              className="btn"
+              className="btn aa-bid-btn"
               onClick={() => sendIntent({ type: 'placeBid', amount: minBid })}
               disabled={!me || me.cash < minBid}
-              style={{ fontSize: '13px' }}
             >
               Bid ₹{minBid.toLocaleString()}
             </button>
             <button
-              className="btn-ghost"
+              className="btn-ghost aa-pass-btn"
               onClick={() => sendIntent({ type: 'passAuction' })}
-              style={{ fontSize: '13px', color: 'var(--danger)' }}
             >
               Pass
             </button>
           </div>
+
+          {/* Custom bid input */}
+          <div className="aa-custom-row">
+            <input
+              type="number"
+              className="aa-custom-input"
+              placeholder={`Min ₹${minBid}`}
+              value={customBid}
+              min={minBid}
+              onChange={e => setCustomBid(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCustomBid()}
+            />
+            <button
+              className="btn-ghost aa-custom-btn"
+              onClick={handleCustomBid}
+              disabled={!customBid || parseInt(customBid) < minBid}
+            >
+              <GavelIcon size={14} />
+            </button>
+          </div>
         </div>
       ) : (
-        <div style={{ fontSize: '12px', color: 'var(--ink-dim)', textAlign: 'center', padding: '8px' }}>
-          Waiting for <strong style={{ color: 'var(--ink)' }}>{gameState.players.find(p => p.id === currentBidder)?.name}</strong> to place bid...
+        <div className="aa-waiting">
+          <div className="aa-waiting-dot" />
+          <span>Waiting for <strong>{gameState.players.find(p => p.id === currentBidder)?.name ?? '…'}</strong></span>
         </div>
       )}
     </div>

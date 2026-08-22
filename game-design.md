@@ -1,9 +1,10 @@
-# Vyapar — Game Design Doc (v2, 40-tile, expandable later)
+# Vyapar — Game Design Doc (v2, 40-tile, international edition)
 
-Real-time multiplayer, Indian-cities themed. Rules blend the classic Indian
+Real-time multiplayer, world-cities themed. Rules blend the classic Indian
 "Business" board game (Club House, Rest House, auction-on-decline, ₹15,000 start)
-with cleaner Monopoly-style building/rent math, plus your own house rules
-(no GO bonus, three card decks instead of two).
+with cleaner Monopoly-style building/rent math, plus custom house rules
+(no GO bonus, three card decks instead of two). Properties are themed
+around 8 real-world countries with international city names.
 
 ---
 
@@ -12,9 +13,11 @@ with cleaner Monopoly-style building/rent math, plus your own house rules
 - **Players:** 2–8
 - **Starting cash:** ₹15,000 each, everyone equal (matches the real Business game)
 - **Bank:** unlimited funds, holds unowned properties, houses/hotels, collects fines & taxes
-- **Passing/landing on GO:** no cash bonus — your explicit house rule, deviates from the
+- **Passing/landing on GO:** no cash bonus — explicit house rule, deviates from the
   real Business game (which pays ₹1,500 on GO) and from Monopoly
-- **Turn order:** highest single die roll at game start goes first
+- **Turn order:** host starts first; subsequent turns follow join order
+- **Goti tokens:** 8 prestige vector tokens — Falcon, Crown, Anchor, Gem, Compass,
+  Shield, Citadel, Medallion — each with a unique gradient color and SVG icon
 - **Optional authentic rule (toggle, off by default for online play):** in the physical
   Business game, everyone rolls each round until someone hits exactly 12 before any
   movement starts. Fun in person, slow online — left as a config toggle, not default.
@@ -23,55 +26,67 @@ with cleaner Monopoly-style building/rent math, plus your own house rules
 
 ## 2. The Board (40 tiles)
 
-8 property groups (22 properties — more cities than richup.io), 4 railway junctions,
+8 property groups (22 properties across 8 countries), 4 international airports,
 2 utilities, 2 tax tiles, 3 card decks (Chance / Community Chest / Surprise),
 Club House, Rest House, and 4 corners.
 
 | # | Tile | Type | Group | Price / Effect |
-|---|------|------|-------|-----------|
+|---|------|------|-------|-----------  |
 | 0 | GO | Corner | — | — |
-| 1 | Patna | Property | A | ₹600 |
+| 1 | Salvador | Property | A (Brazil) | ₹600 |
 | 2 | Community Chest | Card | — | — |
-| 3 | Ranchi | Property | A | ₹600 |
+| 3 | Rio de Janeiro | Property | A (Brazil) | ₹600 |
 | 4 | Income Tax | Tax | — | pay ₹200 flat, or 10% net worth (player's choice) |
-| 5 | Howrah Junction | Railway | — | ₹2,000 |
-| 6 | Bhopal | Property | B | ₹1,000 |
+| 5 | JFK Airport | Railway | — | ₹2,000 |
+| 6 | Paris | Property | B (France) | ₹1,000 |
 | 7 | Chance | Card | — | — |
-| 8 | Indore | Property | B | ₹1,000 |
-| 9 | Nagpur | Property | B | ₹1,000 |
+| 8 | Lyon | Property | B (France) | ₹1,000 |
+| 9 | Toulouse | Property | B (France) | ₹1,000 |
 | 10 | Jail / Just Visiting | Corner | — | — |
-| 11 | Lucknow | Property | C | ₹1,400 |
+| 11 | Shanghai | Property | C (China) | ₹1,400 |
 | 12 | Power Co. | Utility | — | ₹1,500 |
-| 13 | Kanpur | Property | C | ₹1,400 |
-| 14 | Surat | Property | C | ₹1,400 |
-| 15 | Chennai Central | Railway | — | ₹2,000 |
-| 16 | Ahmedabad | Property | D | ₹1,800 |
+| 13 | Beijing | Property | C (China) | ₹1,400 |
+| 14 | Shenzhen | Property | C (China) | ₹1,400 |
+| 15 | CDG Airport | Railway | — | ₹2,000 |
+| 16 | Tokyo | Property | D (Japan) | ₹1,800 |
 | 17 | Club House | Fee | — | pay ₹100 flat to bank |
-| 18 | Jaipur | Property | D | ₹1,800 |
-| 19 | Chandigarh | Property | D | ₹1,800 |
+| 18 | Osaka | Property | D (Japan) | ₹1,800 |
+| 19 | Kyoto | Property | D (Japan) | ₹1,800 |
 | 20 | Free Parking | Corner | — | no jackpot — strict/classic, matches your board |
-| 21 | Pune | Property | E | ₹2,200 |
+| 21 | Rome | Property | E (Italy) | ₹2,200 |
 | 22 | Chance | Card | — | — |
-| 23 | Kochi | Property | E | ₹2,200 |
-| 24 | Coimbatore | Property | E | ₹2,200 |
-| 25 | CST Mumbai | Railway | — | ₹2,000 |
-| 26 | Kolkata | Property | F | ₹2,600 |
-| 27 | Hyderabad | Property | F | ₹2,600 |
+| 23 | Milan | Property | E (Italy) | ₹2,200 |
+| 24 | Venice | Property | E (Italy) | ₹2,200 |
+| 25 | Heathrow Airport | Railway | — | ₹2,000 |
+| 26 | Berlin | Property | F (Germany) | ₹2,600 |
+| 27 | Munich | Property | F (Germany) | ₹2,600 |
 | 28 | Water Board | Utility | — | ₹1,500 |
-| 29 | Chennai | Property | F | ₹2,600 |
+| 29 | Frankfurt | Property | F (Germany) | ₹2,600 |
 | 30 | Go To Jail | Corner | — | — |
-| 31 | Bengaluru | Property | G | ₹3,000 |
-| 32 | Gurgaon | Property | G | ₹3,000 |
+| 31 | London | Property | G (UK) | ₹3,000 |
+| 32 | Manchester | Property | G (UK) | ₹3,000 |
 | 33 | Rest House | Skip | — | skip your entire next turn |
-| 34 | Noida | Property | G | ₹3,000 |
-| 35 | New Delhi Junction | Railway | — | ₹2,000 |
+| 34 | Liverpool | Property | G (UK) | ₹3,000 |
+| 35 | Narita Airport | Railway | — | ₹2,000 |
 | 36 | Surprise | Card | — | — |
 | 37 | Wealth Tax | Tax | — | pay ₹1,500 flat |
-| 38 | New Delhi | Property | H | ₹3,800 |
-| 39 | Mumbai | Property | H | ₹3,800 |
+| 38 | New York | Property | H (USA) | ₹3,800 |
+| 39 | San Francisco | Property | H (USA) | ₹3,800 |
 
-*Expansion later: bigger board = more property groups + a 4th card deck inserted
-between existing sides. Tile-type schema below doesn't need to change.*
+### Property Groups Summary
+
+| Group | Country | Flag | Cities | Price | Base Rent | Color Wash |
+|-------|---------|------|--------|-------|-----------|------------|
+| A | Brazil 🇧🇷 | Green/Gold | Salvador, Rio de Janeiro | ₹600 | ₹40 | Green gradient |
+| B | France 🇫🇷 | Blue/White/Red | Paris, Lyon, Toulouse | ₹1,000 | ₹70 | Blue-red gradient |
+| C | China 🇨🇳 | Red/Gold stars | Shanghai, Beijing, Shenzhen | ₹1,400 | ₹100 | Red gradient |
+| D | Japan 🇯🇵 | White/Red circle | Tokyo, Osaka, Kyoto | ₹1,800 | ₹140 | Red-white gradient |
+| E | Italy 🇮🇹 | Green/White/Red | Rome, Milan, Venice | ₹2,200 | ₹180 | Green-red gradient |
+| F | Germany 🇩🇪 | Black/Red/Gold | Berlin, Munich, Frankfurt | ₹2,600 | ₹220 | Dark-red gradient |
+| G | UK 🇬🇧 | Union Jack | London, Manchester, Liverpool | ₹3,000 | ₹260 | Blue-red gradient |
+| H | USA 🇺🇸 | Stars & Stripes | New York, San Francisco | ₹3,800 | ₹350 | Blue gradient |
+
+*Groups A & H have 2 properties; Groups B–G have 3 properties each. Total: 22 properties.*
 
 ---
 
@@ -93,13 +108,13 @@ between existing sides. Tile-type schema below doesn't need to change.*
   unowned (this matches the real Business game — the bank doesn't force-sell it).
 - **Rent (unimproved) by group:** A ₹40 · B ₹70 · C ₹100 · D ₹140 · E ₹180 · F ₹220 ·
   G ₹260 · H ₹350
-- **Full color group, no houses:** rent doubles automatically.
+- **Full color group, no houses:** rent doubles automatically (configurable via "×2 rent on full sets" toggle).
 - **Building:** must own the full group to build. Houses must be built evenly across
   the group (can't have one tile at 3 houses while another has 0).
 - **Rent multiplier by improvement:** base ×1 (unimproved) → ×5 (1 house) →
   ×15 (2 houses) → ×45 (3 houses) → ×80 (4 houses) → ×125 (hotel).
 - **House cost:** Price ÷ 2 per house, rounded to nearest ₹50. Hotel = 4 houses + Price.
-- **Railways:** rent scales with how many the same player owns — 1: ₹250, 2: ₹500,
+- **Airports:** rent scales with how many the same player owns — 1: ₹250, 2: ₹500,
   3: ₹1,000, 4: ₹2,000.
 - **Utilities:** rent = dice roll × 4 (own 1) or × 10 (own both).
 - **Mortgaging:** mortgage an unimproved property for half its price; unmortgage by
@@ -113,7 +128,7 @@ between existing sides. Tile-type schema below doesn't need to change.*
   3 doubles in a row.
 - **Just visiting:** landing on the Jail tile during normal play (not sent there) costs
   nothing — you're just passing through, matches the real Business game.
-- **Exit via:** pay ₹1,000 fine, roll doubles, or use a "Get Out of Jail Free" card.
+- **Exit via:** pay ₹1,000 fine (configurable), roll doubles, or use a "Get Out of Jail Free" card.
 - **Max stay:** 3 turns — on the 3rd turn, fine payment is forced automatically.
 
 ---
@@ -125,6 +140,9 @@ between existing sides. Tile-type schema below doesn't need to change.*
 - **Rest House (tile 33):** landing here skips your entire next turn (no dice roll
   at all that turn) — also authentic to the real Business game, and a nice
   mid/late-game tempo swing since it's placed on the expensive side of the board.
+- **Free Parking (tile 20):** Labeled as "Vacation" in the UI. Configurable via
+  "Vacation jackpot" toggle — when enabled, landing here earns accumulated tax pool.
+  Default: off (no jackpot, strict classic rules).
 
 ---
 
@@ -141,8 +159,8 @@ gives none in this ruleset).
 positions with another random player, double rent collected this round, skip
 everyone else's next turn, force a mandatory auction on your current tile.
 
-Each deck includes 1–2 "Get Out of Jail Free" cards that stay with the player
-until used or sold.
+Each deck contains 16 cards, including 1–2 "Get Out of Jail Free" cards that stay
+with the player until used or sold.
 
 ---
 
@@ -159,7 +177,22 @@ until used or sold.
 
 ---
 
-## 9. Configurable Rules (toggle per room, so your friend group can vary house rules)
+## 9. Configurable Rules (toggle per room via WaitingRoom settings panel)
+
+| Rule | Default | Description |
+|------|---------|-------------|
+| `startingCash` | ₹15,000 | Starting cash per player |
+| `passGoBonus` | 0 (No GO bonus) | Cash awarded for passing/landing on GO |
+| `freeParkingJackpot` | false | Vacation jackpot — landing on Free Parking earns accumulated tax pool |
+| `auctionOnDecline` | true | Declined properties go to auction |
+| `rollTwelveToStart` | false | Everyone rolls until someone hits 12 before game starts (offline rule) |
+| `maxJailTurns` | 3 | Turns in jail before forced fine |
+| `jailFine` | ₹1,000 | Fine to leave jail |
+| `doublesJailAfter` | 3 | Consecutive doubles before jail |
+| `turnTimerSeconds` | 60 | Turn time limit (UI component exists, server enforcement TBD) |
+| `incomeTaxChoice` | true | Income Tax lets player choose flat vs 10% |
+| `clubHouseFee` | ₹100 | Club House landing fee |
+| `restHouseSkipsFullTurn` | true | Rest House skips your entire next turn |
 
 ```json
 {
@@ -178,6 +211,22 @@ until used or sold.
 }
 ```
 
-This config object should live in the room's authoritative state — makes "no GO
-bonus, more cities, real bank, auctions, Club House, Rest House" the *default*,
+This config object lives in each room's authoritative state — makes "no GO
+bonus, international cities, real bank, auctions, Club House, Rest House" the *default*,
 not something buried in options.
+
+---
+
+## 10. Visual Theme & UI Design Language
+
+- **Dark Luxe Aesthetic:** Deep void background (`#0b0b12`), glassmorphic surface cards,
+  saffron gold (`#f2a93b`) accent highlights throughout.
+- **Country Identity:** Each property group has a unique color wash gradient matching
+  its country's flag palette. Vector SVG flag crests (not emoji) are used in flag
+  bubbles on tiles and property modals.
+- **Board Layout:** 11×11 CSS grid with 4-orientation tile system. Tiles rotate text
+  to face inward toward the board center. Corner tiles are 1.45× wider/taller.
+- **Design References:** richup.io (board layout, tile style, sidebar layout) adapted
+  with a premium dark/gold visual identity unique to Vyapar.
+- **Reference Files:** `vyapar-components1.html` and `vyapar-components2.html` contain
+  static HTML/CSS prototypes of all UI components for design reference.

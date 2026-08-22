@@ -13,14 +13,12 @@ export function PlayerPanel({ gameState, playerId, onSelectTile }: PlayerPanelPr
 
   return (
     <div className="player-panel">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 4px' }}>
-        <div className="panel-title" style={{ padding: 0 }}>Players</div>
-        <span style={{ fontSize: '11px', color: 'var(--ink-dim)' }}>
-          {activeCount} active
-        </span>
+      <div className="pp-header">
+        <div className="panel-title">Players</div>
+        <div className="pp-active-badge">{activeCount} active</div>
       </div>
 
-      <div className="player-panel-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="player-panel-list">
         {gameState.players.map((player, idx) => {
           const isCurrent = idx === gameState.currentPlayerIndex;
           const isYou = player.id === playerId;

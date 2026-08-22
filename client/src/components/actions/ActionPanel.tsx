@@ -1,6 +1,6 @@
 import React from 'react';
 import type { GameState, PlayerIntent } from '@vyapar/game-logic';
-import { BOARD } from '@vyapar/game-logic';
+import { BOARD, calculateNetWorth } from '@vyapar/game-logic';
 import { GotiToken } from '../board/GotiToken';
 import { TurnControls } from './TurnControls';
 import { AuctionArena } from './AuctionArena';
@@ -18,15 +18,16 @@ export function ActionPanel({ gameState, playerId, sendIntent }: ActionPanelProp
   const isMyTurn = currentPlayer?.id === playerId;
   const me = gameState.players.find(p => p.id === playerId);
 
+  let netWorth = me?.cash ?? 0;
+  try { if (me) netWorth = calculateNetWorth(me.id, gameState); } catch {}
+
   if (!me || me.bankrupt) {
     return (
       <div className="action-panel">
-        <div style={{ textAlign: 'center', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-          <SkullIcon size={24} color="var(--danger)" />
-          <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--danger)' }}>You are bankrupt</span>
-          <p style={{ fontSize: '11.5px', color: 'var(--ink-dim)', margin: 0 }}>
-            Spectating the remaining players...
-          </p>
+        <div className="ap-bankrupt">
+          <SkullIcon size={28} color="var(--danger)" />
+          <span className="ap-bankrupt-title">You went bankrupt</span>
+          <p className="ap-bankrupt-sub">Spectating the remaining players…</p>
         </div>
       </div>
     );
@@ -42,43 +43,55 @@ export function ActionPanel({ gameState, playerId, sendIntent }: ActionPanelProp
 
   return (
     <div className="action-panel">
-      {/* v5 Turn Card */}
-      <div className="turn-card">
+
+      {/* Turn card */}
+      <div className={`ap-turn-card ${isMyTurn ? 'ap-turn-card-mine' : ''}`}>
+        {isMyTurn && <div className="ap-turn-pulse" />}
         <GotiToken player={currentPlayer} playerIndex={gameState.currentPlayerIndex} size="lg" active />
-        <div className="turn-card-info">
-          <div className="turn-card-title">
+        <div className="ap-turn-info">
+          <div className="ap-turn-name">
             {isMyTurn ? 'Your Turn' : `${currentPlayer?.name}'s Turn`}
           </div>
-          <div className="turn-card-phase">
+          <div className="ap-turn-phase">
             Phase: {getPhaseLabel(gameState.phase)}
           </div>
         </div>
       </div>
 
-      {/* v5 Stat Pair: Cash + Position */}
-      <div className="stat-pair">
-        <div className="stat-box-card">
-          <div className="stat-box-label">Cash</div>
-          <div className="stat-box-val">₹{me.cash.toLocaleString()}</div>
+      {/* Stats */}
+      <div className="ap-stats-row">
+        <div className="ap-stat-box">
+          <div className="ap-stat-label">Cash</div>
+          <div className="ap-stat-val">₹{me.cash.toLocaleString()}</div>
         </div>
-        <div className="stat-box-card">
-          <div className="stat-box-label">Position</div>
-          <div className="stat-box-val name">{BOARD[me.position]?.name}</div>
+        <div className="ap-stat-box">
+          <div className="ap-stat-label">Position</div>
+          <div className="ap-stat-val ap-stat-name">{BOARD[me.position]?.name ?? '—'}</div>
         </div>
       </div>
 
-      {/* Turn Action Controls */}
+      {/* Net worth */}
+      <div className="ap-networth-row">
+        <span className="ap-networth-label">Net Worth</span>
+        <span className="ap-networth-val">₹{netWorth.toLocaleString()}</span>
+      </div>
+
+      {/* My-turn controls */}
       {isMyTurn && (
-        <div>
-          <TurnControls gameState={gameState} playerId={playerId} sendIntent={sendIntent} />
+        <TurnControls gameState={gameState} playerId={playerId} sendIntent={sendIntent} />
+      )}
+
+      {/* Waiting for other player */}
+      {!isMyTurn && gameState.phase !== 'auction' && (
+        <div className="ap-waiting">
+          <div className="ap-waiting-dot" />
+          <span>Waiting for <strong>{currentPlayer?.name}</strong>…</span>
         </div>
       )}
 
-      {/* Live Auction Stage (Visible to all players during auction) */}
+      {/* Live auction (all players) */}
       {gameState.phase === 'auction' && (
-        <div>
-          <AuctionArena gameState={gameState} playerId={playerId} sendIntent={sendIntent} />
-        </div>
+        <AuctionArena gameState={gameState} playerId={playerId} sendIntent={sendIntent} />
       )}
     </div>
   );
@@ -87,14 +100,14 @@ export function ActionPanel({ gameState, playerId, sendIntent }: ActionPanelProp
 function getPhaseLabel(phase: string): string {
   const labels: Record<string, string> = {
     rolling: 'Roll dice',
-    moving: 'Moving...',
-    landed: 'Resolving...',
-    buyDecision: 'Property Option',
-    auction: 'Auction in progress',
+    moving: 'Moving…',
+    landed: 'Resolving…',
+    buyDecision: 'Property decision',
+    auction: 'Auction',
     payingRent: 'Paying rent',
     drawingCard: 'Drawing card',
-    resolvingCard: 'Resolving card',
-    payingTax: 'Tax payment',
+    resolvingCard: 'Card effect',
+    payingTax: 'Tax time',
     inJail: 'In jail',
     trading: 'Trading',
     bankrupt: 'Bankrupt',

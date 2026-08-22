@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { GameState, PlayerIntent } from '@vyapar/game-logic';
 import { BOARD, canBuyProperty } from '@vyapar/game-logic';
 import { DicePairIcon, CountryCrestBadge, LockIcon, GavelIcon } from '../icons/Icons';
@@ -15,18 +15,39 @@ export function TurnControls({ gameState, playerId, sendIntent }: TurnControlsPr
 
   const tile = BOARD[player.position];
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space' || e.code === 'KeyR') {
+        if (gameState.phase === 'rolling') { e.preventDefault(); sendIntent({ type: 'rollDice' }); }
+        if (gameState.phase === 'inJail') { e.preventDefault(); sendIntent({ type: 'rollForJail' }); }
+      }
+      if (e.code === 'KeyB' && gameState.phase === 'buyDecision') {
+        e.preventDefault();
+        if (canBuyProperty(playerId, player.position, gameState)) sendIntent({ type: 'buyProperty' });
+      }
+      if (e.code === 'KeyD' && gameState.phase === 'buyDecision') {
+        e.preventDefault();
+        sendIntent({ type: 'declineBuy' });
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [gameState.phase, playerId, player.position, sendIntent, gameState]);
+
   switch (gameState.phase) {
     case 'rolling':
       return (
-        <div className="action-block">
-          <div className="action-block-label">Rolling phase</div>
+        <div className="tc-block">
+          <div className="tc-label">Your move</div>
           <button
-            className="btn action-full"
+            className="btn tc-roll-btn"
             onClick={() => sendIntent({ type: 'rollDice' })}
-            style={{ padding: '14px', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
             <DicePairIcon size={20} color="#0b0b12" />
             <span>Roll Dice</span>
+            <span className="tc-shortcut">Space</span>
           </button>
         </div>
       );
@@ -34,50 +55,54 @@ export function TurnControls({ gameState, playerId, sendIntent }: TurnControlsPr
     case 'buyDecision': {
       const canAfford = canBuyProperty(playerId, player.position, gameState);
       return (
-        <div className="action-block">
-          <div className="action-block-label">Property option</div>
-          {/* Property info card */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '14px', border: '1px solid var(--glass-border)', marginBottom: '10px' }}>
-            {tile.group && <CountryCrestBadge group={tile.group} size={30} />}
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, fontFamily: 'var(--font-serif)' }}>{tile.name}</div>
-              <div style={{ fontSize: '12px', color: 'var(--saffron)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>₹{tile.price?.toLocaleString()}</div>
+        <div className="tc-block">
+          <div className="tc-label">Property decision</div>
+          {/* Property preview */}
+          <div className="tc-property-preview">
+            {tile.group && <CountryCrestBadge group={tile.group} size={34} />}
+            <div className="tc-prop-info">
+              <div className="tc-prop-name">{tile.name}</div>
+              <div className="tc-prop-price">₹{tile.price?.toLocaleString()}</div>
             </div>
           </div>
-          <div className="action-btns-row">
+          <div className="tc-btn-row">
             <button
-              className="btn"
+              className="btn tc-buy-btn"
               onClick={() => sendIntent({ type: 'buyProperty' })}
               disabled={!canAfford}
+              title="Buy (B)"
             >
               Buy — ₹{tile.price?.toLocaleString()}
             </button>
             <button
-              className="btn-ghost"
+              className="btn-ghost tc-auction-btn"
               onClick={() => sendIntent({ type: 'declineBuy' })}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+              title="Auction (D)"
             >
               <GavelIcon size={14} />
               <span>Auction</span>
             </button>
           </div>
+          {!canAfford && (
+            <div className="tc-cant-afford">Insufficient funds to purchase</div>
+          )}
         </div>
       );
     }
 
     case 'payingTax':
       return (
-        <div className="action-block">
-          <div className="action-block-label">Tax choice</div>
-          <p style={{ fontSize: '12px', color: 'var(--ink-dim)', margin: '0 0 8px' }}>
-            {tile.name}: Choose tax calculation method
-          </p>
-          <div className="action-btns-row">
-            <button className="btn-ghost" onClick={() => sendIntent({ type: 'payTaxFlat' })}>
-              Pay Flat ₹{tile.taxAmount?.toLocaleString()}
+        <div className="tc-block">
+          <div className="tc-label">Tax payment</div>
+          <p className="tc-desc">{tile.name}: choose your calculation method</p>
+          <div className="tc-btn-row">
+            <button className="btn-ghost" style={{ flex: 1, padding: '12px 8px' }}
+              onClick={() => sendIntent({ type: 'payTaxFlat' })}>
+              Flat ₹{tile.taxAmount?.toLocaleString()}
             </button>
-            <button className="btn-ghost" onClick={() => sendIntent({ type: 'payTaxPercent' })}>
-              Pay 10% Net Worth
+            <button className="btn-ghost" style={{ flex: 1, padding: '12px 8px' }}
+              onClick={() => sendIntent({ type: 'payTaxPercent' })}>
+              10% Net Worth
             </button>
           </div>
         </div>
@@ -85,20 +110,20 @@ export function TurnControls({ gameState, playerId, sendIntent }: TurnControlsPr
 
     case 'inJail':
       return (
-        <div className="action-block">
-          <div className="action-block-label">In jail</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: 'var(--danger)', background: 'rgba(227,92,92,0.1)', padding: '8px 12px', borderRadius: '10px', marginBottom: '10px' }}>
+        <div className="tc-block">
+          <div className="tc-label">In jail</div>
+          <div className="tc-jail-banner">
             <LockIcon size={14} color="var(--danger)" />
-            <span>In Jail (Turn {player.jailTurns + 1}/{gameState.config.maxJailTurns})</span>
+            <span>Turn {player.jailTurns + 1} of {gameState.config.maxJailTurns}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="tc-jail-options">
             <button
-              className="btn action-full"
+              className="btn tc-roll-btn"
               onClick={() => sendIntent({ type: 'rollForJail' })}
-              style={{ padding: '13px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
               <DicePairIcon size={16} color="#0b0b12" />
               <span>Roll for Doubles</span>
+              <span className="tc-shortcut">Space</span>
             </button>
             <button
               className="btn-ghost action-full"
@@ -114,7 +139,7 @@ export function TurnControls({ gameState, playerId, sendIntent }: TurnControlsPr
                 onClick={() => sendIntent({ type: 'useGetOutOfJailCard' })}
                 style={{ padding: '11px', fontSize: '13px', color: 'var(--saffron)' }}
               >
-                Use Jail Pass Card
+                🃏 Use Jail Pass Card
               </button>
             )}
           </div>

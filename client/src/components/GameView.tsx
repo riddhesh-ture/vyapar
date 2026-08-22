@@ -5,6 +5,7 @@ import { ActionPanel } from './actions/ActionPanel';
 import { PlayerPanel } from './hud/PlayerPanel';
 import { RentBoard } from './hud/RentBoard';
 import { PropertyModal } from './modals/PropertyModal';
+import { AuctionOverlay } from './actions/AuctionOverlay';
 
 interface GameViewProps {
   gameState: GameState;
@@ -57,6 +58,15 @@ export function GameView({ gameState, playerId, sendIntent }: GameViewProps) {
           gameState={gameState}
           playerId={playerId}
           onClose={() => setSelectedTileIndex(null)}
+          sendIntent={sendIntent}
+        />
+      )}
+
+      {/* Richup.io-style Auction Modal Overlay */}
+      {gameState.phase === 'auction' && gameState.auction && (
+        <AuctionOverlay
+          gameState={gameState}
+          playerId={playerId}
           sendIntent={sendIntent}
         />
       )}

@@ -59,6 +59,34 @@ export class VyaparServer extends Server {
   };
 
   state!: GameState;
+  auctionTimer: any = null;
+
+  clearAuctionTimer(): void {
+    if (this.auctionTimer) {
+      clearTimeout(this.auctionTimer);
+      this.auctionTimer = null;
+    }
+  }
+
+  resetAuctionTimer(timeoutMs = 12_000): void {
+    this.clearAuctionTimer();
+    if (this.state.phase !== 'auction' || !this.state.auction) return;
+
+    this.auctionTimer = setTimeout(() => {
+      try {
+        if (this.state.phase === 'auction' && this.state.auction) {
+          const auction = this.state.auction;
+          const currentBidderId = auction.activeParticipants[auction.currentBidderTurnIndex];
+          if (currentBidderId) {
+            this.handlePassAuction(currentBidderId);
+            this.broadcastState();
+          }
+        }
+      } catch (err) {
+        console.error('Error in auction timeout handler:', err);
+      }
+    }, timeoutMs);
+  }
 
   onStart() {
     this.state = this.createWaitingState(this.name);
@@ -257,6 +285,7 @@ export class VyaparServer extends Server {
   }
 
   handleResetGame(playerId: string): void {
+    this.clearAuctionTimer();
     const roomPlayers = this.state.players.map(p => ({
       ...p,
       cash: this.state.config.startingCash,
@@ -696,6 +725,7 @@ export class VyaparServer extends Server {
     };
     this.state.phase = 'auction';
     this.addLog(`Auction started for ${BOARD[tileIndex].name}!`);
+    this.resetAuctionTimer();
   }
 
   handlePlaceBid(playerId: string, amount: number): void {
@@ -735,6 +765,7 @@ export class VyaparServer extends Server {
     } else if (auction.activeParticipants.length === 0) {
       // Nobody bid
       this.addLog('No one bid. Property remains unowned.');
+      this.clearAuctionTimer();
       this.state.auction = null;
       this.finishTurnOrContinue();
     } else {
@@ -745,6 +776,8 @@ export class VyaparServer extends Server {
       // If only the current highest bidder remains, they win
       if (auction.activeParticipants.length === 1 && auction.currentBidderId === auction.activeParticipants[0]) {
         this.resolveAuction();
+      } else {
+        this.resetAuctionTimer();
       }
     }
   }
@@ -759,11 +792,15 @@ export class VyaparServer extends Server {
         this.resolveAuction();
       } else {
         auction.currentBidderTurnIndex = (auction.currentBidderTurnIndex + 1) % auction.activeParticipants.length;
+        this.resetAuctionTimer();
       }
+    } else {
+      this.resetAuctionTimer();
     }
   }
 
   resolveAuction(): void {
+    this.clearAuctionTimer();
     const auction = this.state.auction!;
     if (!auction.currentBidderId || auction.currentBid <= 0) {
       this.addLog('Auction ended with no valid bid. Property remains unowned.');

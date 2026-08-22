@@ -14,6 +14,8 @@ import {
   ChestIcon,
   BusinessIcon,
   RestHouseIcon,
+  HouseIcon,
+  HotelIcon,
 } from '../icons/Icons';
 
 interface TileProps {
@@ -50,26 +52,52 @@ export function getTileGridPosition(index: number): { col: number; row: number; 
 function getSpecialTileDetails(tile: TileType): { washClass: string; renderIcon: () => React.ReactNode; kind: string } {
   if (tile.type === 'corner') {
     switch (tile.cornerType) {
-      case 'go': return { washClass: 'corner-start', renderIcon: () => <StartFlagIcon size={20} color="var(--saffron)" />, kind: 'START' };
-      case 'jail': return { washClass: 'corner-jail', renderIcon: () => <JailBarsIcon size={20} color="#ff9d6c" />, kind: 'In Prison' };
-      case 'freeParking': return { washClass: 'corner-vac', renderIcon: () => <VacationPalmIcon size={20} color="#5ce39a" />, kind: 'Vacation' };
-      case 'goToJail': return { washClass: 'corner-police', renderIcon: () => <PoliceBadgeIcon size={20} color="#e35c3c" />, kind: 'Go to Prison' };
-      default: return { washClass: 'corner-jail', renderIcon: () => <JailBarsIcon size={20} />, kind: 'Corner' };
+      case 'go': return { washClass: 'corner-start', renderIcon: () => <StartFlagIcon size={22} color="var(--saffron)" />, kind: 'START' };
+      case 'jail': return { washClass: 'corner-jail', renderIcon: () => <JailBarsIcon size={22} color="#ff9d6c" />, kind: 'In Prison' };
+      case 'freeParking': return { washClass: 'corner-vac', renderIcon: () => <VacationPalmIcon size={22} color="#5ce39a" />, kind: 'Vacation' };
+      case 'goToJail': return { washClass: 'corner-police', renderIcon: () => <PoliceBadgeIcon size={22} color="#e35c3c" />, kind: 'Go to Prison' };
+      default: return { washClass: 'corner-jail', renderIcon: () => <JailBarsIcon size={22} />, kind: 'Corner' };
     }
   }
-  if (tile.type === 'railway') return { washClass: 'special-util', renderIcon: () => <JetlinerIcon size={18} color="var(--saffron)" />, kind: 'Airport' };
-  if (tile.type === 'utility') return { washClass: 'special-util', renderIcon: () => <EnergyBoltIcon size={18} color="var(--saffron)" />, kind: 'Company' };
-  if (tile.type === 'tax') return { washClass: 'special-util', renderIcon: () => <TreasuryIcon size={18} color="#ffd18f" />, kind: 'Tax' };
+  if (tile.type === 'railway') return { washClass: 'special-util', renderIcon: () => <JetlinerIcon size={20} color="var(--saffron)" />, kind: 'Airport' };
+  if (tile.type === 'utility') return { washClass: 'special-util', renderIcon: () => <EnergyBoltIcon size={20} color="var(--saffron)" />, kind: 'Company' };
+  if (tile.type === 'tax') return { washClass: 'special-util', renderIcon: () => <TreasuryIcon size={20} color="#ffd18f" />, kind: 'Tax' };
   if (tile.type === 'card') {
     return {
       washClass: 'special-chest',
-      renderIcon: () => tile.deck === 'chance' ? <ChanceIcon size={18} color="var(--saffron)" /> : <ChestIcon size={18} color="var(--saffron)" />,
+      renderIcon: () => tile.deck === 'chance' ? <ChanceIcon size={20} color="var(--saffron)" /> : <ChestIcon size={20} color="var(--saffron)" />,
       kind: tile.deck === 'chance' ? 'Chance' : tile.deck === 'communityChest' ? 'Chest' : 'Surprise',
     };
   }
-  if (tile.type === 'fee') return { washClass: 'special-chest', renderIcon: () => <BusinessIcon size={18} color="#8fc7ff" />, kind: 'Business' };
-  if (tile.type === 'skip') return { washClass: 'special-util', renderIcon: () => <RestHouseIcon size={18} color="#b9ec8a" />, kind: 'Rest' };
-  return { washClass: 'special-util', renderIcon: () => <BusinessIcon size={18} />, kind: 'Property' };
+  if (tile.type === 'fee') return { washClass: 'special-chest', renderIcon: () => <BusinessIcon size={20} color="#8fc7ff" />, kind: 'Business' };
+  if (tile.type === 'skip') return { washClass: 'special-util', renderIcon: () => <RestHouseIcon size={20} color="#b9ec8a" />, kind: 'Rest' };
+  return { washClass: 'special-util', renderIcon: () => <BusinessIcon size={20} />, kind: 'Property' };
+}
+
+/** Renders 1–4 house dots or a hotel dot below the price pill on owned properties */
+function HouseIndicator({ houses }: { houses: number }) {
+  if (houses === 0) return null;
+  if (houses === 5) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1px', marginTop: '1px', zIndex: 4, position: 'relative' }}>
+        <HotelIcon size={8} color="#ffd18f" />
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', marginTop: '1px', zIndex: 4, position: 'relative' }}>
+      {Array.from({ length: houses }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            width: '5px', height: '5px', borderRadius: '50%',
+            background: 'var(--success)',
+            boxShadow: '0 0 4px rgba(92,227,154,0.7)',
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 export function Tile({ tile, gameState, playerId, onSelectTile }: TileProps) {
@@ -94,6 +122,7 @@ export function Tile({ tile, gameState, playerId, onSelectTile }: TileProps) {
   if (isProperty && tile.group) {
     const country = GROUP_COUNTRIES[tile.group];
     const wash = GROUP_WASHES[tile.group] || 'brazil';
+    const houses = prop?.houses ?? 0;
 
     return (
       <div
@@ -110,7 +139,7 @@ export function Tile({ tile, gameState, playerId, onSelectTile }: TileProps) {
 
           {/* Vector Country Crest Badge */}
           <div className="flag-bubble" title={country}>
-            <CountryCrestBadge group={tile.group} size={26} />
+            <CountryCrestBadge group={tile.group} size={32} />
           </div>
 
           {/* Owner strip */}
@@ -123,6 +152,7 @@ export function Tile({ tile, gameState, playerId, onSelectTile }: TileProps) {
               <span className="rs">₹</span>
               {tile.price?.toLocaleString()}
             </div>
+            <HouseIndicator houses={houses} />
           </div>
 
           {/* Players on Tile */}
