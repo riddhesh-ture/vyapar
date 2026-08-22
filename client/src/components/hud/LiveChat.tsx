@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { GameState, PlayerIntent } from '@vyapar/game-logic';
-import { Send, MessageSquare, Smile } from 'lucide-react';
 import { GotiToken } from '../board/GotiToken';
 
 interface LiveChatProps {
@@ -10,6 +9,34 @@ interface LiveChatProps {
 }
 
 const QUICK_EMOJIS = ['🎲', '💰', '🚀', '🔥', '👏', '😢', '👑', '🤝'];
+
+function SendIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+function MessageSquareIcon({ size = 15, color = 'currentColor' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function SmileIcon({ size = 16, color = 'currentColor' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <line x1="9" y1="9" x2="9.01" y2="9" />
+      <line x1="15" y1="9" x2="15.01" y2="9" />
+    </svg>
+  );
+}
 
 export function LiveChat({ gameState, playerId, sendIntent }: LiveChatProps) {
   const [inputMessage, setInputMessage] = useState('');
@@ -42,7 +69,7 @@ export function LiveChat({ gameState, playerId, sendIntent }: LiveChatProps) {
       {/* Header */}
       <div className="live-chat-header">
         <div className="live-chat-title">
-          <MessageSquare size={15} color="var(--saffron)" />
+          <MessageSquareIcon size={15} color="var(--saffron)" />
           <span>Game Chat & Activity</span>
         </div>
         <div className="live-chat-count">
@@ -111,7 +138,7 @@ export function LiveChat({ gameState, playerId, sendIntent }: LiveChatProps) {
             onClick={() => setShowEmojiPicker(prev => !prev)}
             title="Add reaction"
           >
-            <Smile size={16} color="var(--ink-dim)" />
+            <SmileIcon size={16} color="var(--ink-dim)" />
           </button>
 
           <input
@@ -129,7 +156,7 @@ export function LiveChat({ gameState, playerId, sendIntent }: LiveChatProps) {
             disabled={!inputMessage.trim()}
             title="Send Message"
           >
-            <Send size={14} />
+            <SendIcon size={14} />
           </button>
         </form>
       )}

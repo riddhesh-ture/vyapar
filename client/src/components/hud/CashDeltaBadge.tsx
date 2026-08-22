@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { sounds } from '../../utils/soundEngine';
 
 interface CashDeltaBadgeProps {
   cash: number;
@@ -24,12 +22,6 @@ export function CashDeltaBadge({ cash, playerId }: CashDeltaBadgeProps) {
         amount: diff,
       };
 
-      if (diff > 0) {
-        sounds.playPassGo();
-      } else {
-        sounds.playPayRent();
-      }
-
       setDeltas(prev => [...prev.slice(-3), newDelta]);
 
       const timer = setTimeout(() => {
@@ -43,20 +35,14 @@ export function CashDeltaBadge({ cash, playerId }: CashDeltaBadgeProps) {
 
   return (
     <div className="cash-delta-container">
-      <AnimatePresence>
-        {deltas.map(d => (
-          <motion.div
-            key={d.id}
-            initial={{ opacity: 0, y: 10, scale: 0.8 }}
-            animate={{ opacity: 1, y: -24, scale: 1.1 }}
-            exit={{ opacity: 0, y: -45, scale: 0.9 }}
-            transition={{ duration: 1.4, ease: 'easeOut' }}
-            className={`cash-delta-badge ${d.amount > 0 ? 'delta-positive' : 'delta-negative'}`}
-          >
-            {d.amount > 0 ? `+₹${d.amount.toLocaleString()}` : `-₹${Math.abs(d.amount).toLocaleString()}`}
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      {deltas.map(d => (
+        <div
+          key={d.id}
+          className={`cash-delta-badge ${d.amount > 0 ? 'delta-positive' : 'delta-negative'}`}
+        >
+          {d.amount > 0 ? `+₹${d.amount.toLocaleString()}` : `-₹${Math.abs(d.amount).toLocaleString()}`}
+        </div>
+      ))}
     </div>
   );
 }
