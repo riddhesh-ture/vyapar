@@ -250,6 +250,9 @@ export class VyaparServer extends Server {
       case 'payTaxPercent':
         this.handlePayTax(playerId, 'percent');
         break;
+      case 'chat':
+        this.handleChat(playerId, intent.message);
+        break;
       case 'endTurn':
         this.handleEndTurn(playerId);
         break;
@@ -258,6 +261,13 @@ export class VyaparServer extends Server {
     }
 
     this.broadcastState();
+  }
+
+  handleChat(playerId: string, message: string): void {
+    const player = this.getPlayer(playerId);
+    const trimmed = message.trim().slice(0, 140);
+    if (!trimmed) return;
+    this.addLog(`💬 ${player.name}: ${trimmed}`, playerId);
   }
 
   // ── Lobby ────────────────────────────────────────────────────

@@ -129,7 +129,7 @@ export function CenterDeedCard({
       )}
 
       {/* Airports Table */}
-      {tile.type === 'airport' && (
+      {tile.type === 'railway' && (
         <div className="center-deed-rent-table">
           <div className="deed-rent-row"><span>1 Airport</span><span className="deed-val">₹250</span></div>
           <div className="deed-rent-row"><span>2 Airports</span><span className="deed-val">₹500</span></div>

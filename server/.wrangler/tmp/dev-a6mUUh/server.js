@@ -1799,6 +1799,9 @@ var VyaparServer = class extends Server {
       case "payTaxPercent":
         this.handlePayTax(playerId, "percent");
         break;
+      case "chat":
+        this.handleChat(playerId, intent.message);
+        break;
       case "endTurn":
         this.handleEndTurn(playerId);
         break;
@@ -1806,6 +1809,12 @@ var VyaparServer = class extends Server {
         throw new Error(`Unhandled intent: ${intent.type}`);
     }
     this.broadcastState();
+  }
+  handleChat(playerId, message) {
+    const player = this.getPlayer(playerId);
+    const trimmed = message.trim().slice(0, 140);
+    if (!trimmed) return;
+    this.addLog(`\u{1F4AC} ${player.name}: ${trimmed}`, playerId);
   }
   // ── Lobby ────────────────────────────────────────────────────
   handleSetName(playerId, name) {

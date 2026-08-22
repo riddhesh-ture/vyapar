@@ -248,6 +248,7 @@ export type PlayerIntent =
   | { type: 'proposeTrade'; targetId: string; offering: TradeOffer; requesting: TradeOffer }
   | { type: 'acceptTrade' }
   | { type: 'rejectTrade' }
+  | { type: 'chat'; message: string }
   | { type: 'endTurn' };
 
 export type ServerMessage =
